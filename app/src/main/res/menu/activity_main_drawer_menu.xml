@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:icon="@drawable/time_fill"
+            android:id="@+id/switching_time"
+            android:title="切换源" />
+        <item
+            android:icon="@drawable/resource"
+            android:id="@+id/share_resources"
+            android:title="分享资源" />
+        <item
+            android:icon="@drawable/point"
+            android:id="@+id/video_integral"
+            android:title="视频积分" />
+        <item
+            android:icon="@drawable/activation"
+            android:id="@+id/code_activation"
+            android:title="激活码激活" />
+        <item
+            android:icon="@drawable/ad_free"
+            android:id="@+id/ad_free_viewing"
+            android:title="免广告观看" />
+    </group>
+</menu>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:padding="15dp"
+    android:background="@drawable/bg_white_8_radius"
+    android:layout_gravity="center"
+    android:layout_height="wrap_content">
+
+
+    <TextView
+        android:text="该版本为内测版本,请输入使用激活码。\n 注册后将在1-5个工作日通过注册邮箱发送给您。\n 注意：激活码仅可使用一次."
+        android:layout_width="match_parent"
+        android:textSize="14dp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_height="wrap_content"/>
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:layout_width="match_parent"
+        android:background="@null"
+        android:hint="输入激活码"
+        android:gravity="center"
+        android:textSize="14dp"
+        android:layout_marginTop="15dp"
+        android:textStyle="bold"
+        android:layout_height="wrap_content"/>
+
+    <Button
+        android:id="@+id/tip_activation"
+        android:layout_marginTop="30dp"
+        android:text="立即激活"
+        android:textSize="16dp"
+        android:textColor="@color/white"
+        android:background="@drawable/bg_text_f74848_5_radius"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+</LinearLayout>

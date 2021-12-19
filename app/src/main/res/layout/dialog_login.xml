@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_gravity="center"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:background="@drawable/bg_white_8_radius"
+        android:padding="30dp"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/login_username"
+            app:hintEnabled="true"
+            android:hint="输入用户名称"
+            app:startIconDrawable="@drawable/user"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                style="@style/edit_common"
+                android:imeOptions="actionNext"
+                android:layout_height="wrap_content"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_marginTop="15dp"
+            android:id="@+id/login_password"
+            app:hintEnabled="true"
+            android:hint="输入账户密码"
+            app:passwordToggleEnabled="true"
+            app:startIconDrawable="@drawable/secret"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                style="@style/edit_common"
+                android:inputType="textPassword"
+                android:layout_height="wrap_content"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:layout_gravity="end"
+            android:id="@+id/login_forget_passwd"
+            android:text="忘记/找回密码"
+            android:textSize="12dp"
+            android:textColor="#8f000000"
+            android:gravity="center_horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <Button
+            android:id="@+id/login_do"
+            android:layout_marginTop="30dp"
+            android:text="立即登录"
+            android:textSize="16dp"
+            android:textColor="@color/white"
+            android:background="@drawable/bg_text_f74848_5_radius"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/login_two_register"
+            android:layout_marginTop="15dp"
+            android:text="注册"
+            android:textSize="16dp"
+            android:textColor="#8f000000"
+            android:gravity="center_horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+    <ImageView
+        android:layout_marginTop="25dp"
+        android:src="@drawable/close_white"
+        android:id="@+id/login_close"
+        android:layout_gravity="center_horizontal"
+        android:layout_width="25dp"
+        android:layout_height="25dp"/>
+</LinearLayout>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!--修改NavigationView菜单图标与文字之间的间距-->
+    <dimen name="design_navigation_icon_padding" tools:override="true">2dp</dimen>
+</resources>

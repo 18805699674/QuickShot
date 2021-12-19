@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_gravity="center"
+    android:layout_height="wrap_content">
+
+
+    <LinearLayout
+        android:background="@drawable/bg_white_8_radius"
+        android:padding="30dp"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/register_username"
+            app:errorEnabled="true"
+            app:hintEnabled="true"
+            app:counterEnabled="true"
+            android:hint="输入用户名称"
+            app:counterMaxLength="10"
+            app:startIconDrawable="@drawable/user"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                style="@style/edit_common"
+                android:imeOptions="actionNext"
+                android:layout_height="wrap_content"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/register_password"
+            app:errorEnabled="true"
+            app:hintEnabled="true"
+            app:counterEnabled="true"
+            app:counterMaxLength="10"
+            android:hint="输入账户密码"
+            app:passwordToggleEnabled="true"
+            app:startIconDrawable="@drawable/secret"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                style="@style/edit_common"
+                android:inputType="textPassword"
+                android:layout_height="wrap_content"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/register_email"
+            android:layout_weight="1"
+            app:errorEnabled="true"
+            app:hintEnabled="true"
+            app:counterEnabled="true"
+            app:counterMaxLength="10"
+            android:hint="输入邮箱地址"
+            app:startIconDrawable="@drawable/email"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                style="@style/edit_common"
+                android:layout_height="wrap_content"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <LinearLayout
+            android:id="@+id/register_pr"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/register_code"
+                android:layout_weight="1"
+                android:hint="输入验证码"
+                app:startIconDrawable="@drawable/code"
+                app:endIconDrawable="@drawable/menu"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:layout_width="match_parent"
+                    style="@style/edit_common"
+                    android:layout_height="wrap_content"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+
+            <TextView
+                android:id="@+id/register_code_btn"
+                android:layout_gravity="center_vertical"
+                android:background="@drawable/bg_text_ff7000_5_radius"
+                android:layout_marginStart="10dp"
+                android:text="发送验证码"
+                android:textSize="14dp"
+                android:textColor="@color/white"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingTop="5dp"
+                android:paddingBottom="5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/register_btn"
+            android:layout_marginTop="30dp"
+            android:text="立即注册"
+            android:textSize="16dp"
+            android:textColor="@color/white"
+            android:background="@drawable/bg_text_f74848_5_radius"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/login_two_register"
+            android:layout_marginTop="15dp"
+            android:text="已有账号?登录"
+            android:textSize="14dp"
+            android:textColor="#8f000000"
+            android:gravity="center_horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+    <ImageView
+        android:layout_marginTop="25dp"
+        android:src="@drawable/close_white"
+        android:id="@+id/register_close"
+        android:layout_gravity="center_horizontal"
+        android:layout_width="25dp"
+        android:layout_height="25dp"/>
+</LinearLayout>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

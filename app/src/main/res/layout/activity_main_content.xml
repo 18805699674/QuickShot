@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tool="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.scwang.smartrefresh.layout.SmartRefreshLayout
+        android:id="@+id/smartRefresh"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:overScrollMode="never"
+            android:background="#fff" />
+    </com.scwang.smartrefresh.layout.SmartRefreshLayout>
+
+    <RelativeLayout
+        tool:visibility="visible"
+        android:visibility="gone"
+        android:id="@+id/operate"
+        android:layout_gravity="end|bottom"
+        android:layout_marginEnd="30dp"
+        android:gravity="center"
+        android:layout_marginBottom="40dp"
+        android:layout_width="45dp"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/top"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/top" />
+
+        <LinearLayout
+            android:gravity="center_horizontal"
+            android:layout_below="@+id/top"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:id="@+id/currentPageNum"
+                android:text="15"
+                android:textSize="14dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+           <TextView
+               android:layout_gravity="center_horizontal"
+               android:textColor="@color/teal_700"
+                android:textStyle="bold"
+                android:text="/"
+                android:textSize="14dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:textSize="14dp"
+                android:id="@+id/totalPageNum"
+                android:text="99"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+    </RelativeLayout>
+
+    <com.wang.avi.AVLoadingIndicatorView
+        tool:visibility="gone"
+        android:id="@+id/loadingView"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/AVLoadingIndicatorView"
+        android:visibility="invisible"
+        app:indicatorName="BallPulseIndicator"
+        app:indicatorColor="@color/purple_200"/>
+
+    <TextView
+        android:id="@+id/need_login"
+        android:layout_gravity="center"
+        android:textStyle="bold"
+        android:textColor="@color/white"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
+        android:text="未登录,点击登录"
+        android:background="@drawable/bg_text_ff7000_5_radius"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+</FrameLayout>
