@@ -14,12 +14,21 @@
         android:layout_height="match_parent"/>
 
 
-    <com.google.android.material.navigation.NavigationView
-        android:id="@+id/nav_view"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
+<!--    <com.google.android.material.navigation.NavigationView-->
+<!--        android:id="@+id/nav_view"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:layout_gravity="start"-->
+<!--        app:itemTextColor="@color/select_color_navigation"-->
+<!--        app:headerLayout="@layout/activity_main_drawer"-->
+<!--        app:menu="@menu/activity_main_drawer_menu" />-->
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:paddingTop="@dimen/top_bar"
+        android:id="@+id/nav_view_recycle"
+        android:background="@color/white"
+        android:layout_width="match_parent"
         android:layout_gravity="start"
-        app:itemTextColor="@color/select_color_navigation"
-        app:headerLayout="@layout/activity_main_drawer"
-        app:menu="@menu/activity_main_drawer_menu" />
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        android:layout_height="match_parent"/>
 </androidx.drawerlayout.widget.DrawerLayout>

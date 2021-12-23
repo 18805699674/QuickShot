@@ -11,6 +11,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import androidx.fragment.app.DialogFragment
+import android.view.WindowManager
+
+import android.R
+
+import android.widget.EditText
+
+import androidx.annotation.NonNull
+import com.blankj.utilcode.util.KeyboardUtils
+
 
 /**
  *
@@ -54,8 +63,7 @@ abstract class BaseDialogFragment : DialogFragment() {
         dialog?.requestWindowFeature(Window.FEATURE_NO_TITLE)
         dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         dialog?.window?.setDimAmount(0.4f)
-        dialog?.setCanceledOnTouchOutside(false)
-        return super.onCreateView(inflater, container, savedInstanceState)
+        return inflater.inflate(setDialogLayoutId(), container,false)
     }
 
     open fun setDimAmount(dimAmount: Float){
@@ -63,7 +71,7 @@ abstract class BaseDialogFragment : DialogFragment() {
     }
 
     open fun setCanceledOnTouchOutside(canceled:Boolean){
-        dialog?.setCanceledOnTouchOutside(canceled)
+        dialog?.setCanceledOnTouchOutside(false)
     }
 
     override fun onStart() {
@@ -83,11 +91,10 @@ abstract class BaseDialogFragment : DialogFragment() {
             }
     }
 
-
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val builder: AlertDialog.Builder = AlertDialog.Builder(activity)
         val inflater = activity?.layoutInflater
-        val view: View? = inflater?.inflate(setDialogLayoutId(), null)
+        val view: View? = inflater?.inflate(setDialogLayoutId(),null)
         handleViewEvent(view)
         builder.setView(view)
         return builder.create()
@@ -96,7 +103,6 @@ abstract class BaseDialogFragment : DialogFragment() {
     abstract fun handleViewEvent(view: View?)
 
     abstract fun setDialogLayoutId(): Int
-
 }
 
 

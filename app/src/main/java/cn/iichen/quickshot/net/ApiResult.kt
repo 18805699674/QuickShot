@@ -37,7 +37,7 @@ import cn.iichen.quickshot.ext.toast
 sealed class ApiResult<out T> {
     data class Success<out T>(val value: T) : ApiResult<T>()
 
-    data class Failure(val throwable: Throwable?) : ApiResult<Nothing>()
+    data class Failure(val message: String?) : ApiResult<Nothing>()
 }
 
 inline fun <reified T> ApiResult<T>.doSuccess(success: (T) -> Unit) {
@@ -46,11 +46,11 @@ inline fun <reified T> ApiResult<T>.doSuccess(success: (T) -> Unit) {
     }
 }
 
-inline fun <reified T> ApiResult<T>.doFailure(failure: (Throwable?) -> Unit) {
+inline fun <reified T> ApiResult<T>.doFailure(failure: (String?) -> Unit) {
     if (this is ApiResult.Failure) {
-        throwable?.message?.toast()
-        throwable?.message?.let { it1 -> Log.d("iichen", "请求失败  $it1") }
-        failure(throwable)
+        message?.toast()
+        message?.let { it1 -> Log.d("iichen", "请求失败  $it1") }
+        failure(message)
     }
 }
 

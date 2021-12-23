@@ -2,6 +2,7 @@ package cn.iichen.quickshot.ext
 
 import android.util.Log
 import android.view.View
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
@@ -10,6 +11,8 @@ import androidx.lifecycle.liveData
 import cn.iichen.diverseweather.data.remote.ApiResult
 import cn.iichen.diverseweather.data.remote.doFailure
 import cn.iichen.diverseweather.data.remote.doSuccess
+import cn.iichen.quickshot.R
+import cn.iichen.quickshot.pojo.UserBean
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 
@@ -45,9 +48,45 @@ import kotlinx.coroutines.flow.collectLatest
  */
 object Ext {
     // 用户登录 Token身份
-    var MMKV_KEY_TOKEN:String = "MMKV_KEY_TOKEN"
+    const val MMKV_KEY_TOKEN:String = "MMKV_KEY_TOKEN"
     // 是否app第一次打开
-    var MMKV_KEY_FIRST_OPEN :String = "MMKV_KEY_FIRST_OPEN"
+    const val MMKV_KEY_FIRST_OPEN :String = "MMKV_KEY_FIRST_OPEN"
+    // 将当前邮箱与 Code绑定 比如：倒计时就关闭弹窗时，可以直接使用
+    const val MMKV_KEY_EMAIL_CODE:String = "MMKV_KEY_EMAIL_CODE"
+
+    // 服务器错误码
+    const val SERVICE_ERROR_CODE =  400
+
+    var user: UserBean.Data? = null
+}
+
+fun ImageView.setLevel(level:Int){
+    this.visibility()
+    when(level){
+        1 -> {
+            this.setImageResource(R.drawable.level_one)
+        }
+        2 -> {
+            this.setImageResource(R.drawable.level_two)
+        }
+        3 -> {
+            this.setImageResource(R.drawable.level_three)
+        }
+        4 -> {
+            this.setImageResource(R.drawable.level_four)
+        }
+        5 -> {
+            this.setImageResource(R.drawable.level_five)
+        }
+        else ->
+            this.setImageResource(R.drawable.level_vip)
+    }
+}
+
+fun View.click(call:()->Unit){
+    setOnClickListener {
+        call()
+    }
 }
 
 fun View.visibility(){
@@ -63,7 +102,7 @@ fun String.toast(){
 }
 
 fun <T> LiveData<T>.observeNonNull(owner: LifecycleOwner, observer: (T) -> Unit) {
-    this.observe(owner, Observer {
+    this.observe(owner, {
         if (it != null) {
             // 加载情况处理
 //            if(it is Boolean){
@@ -71,19 +110,4 @@ fun <T> LiveData<T>.observeNonNull(owner: LifecycleOwner, observer: (T) -> Unit)
             observer(it)
         }
     })
-}
-
-
-suspend inline fun <reified T> Flow<ApiResult<T>>.collectLatestII(crossinline doFailure: () -> Unit, crossinline doSuccess: (T) -> Unit) {
-    this.collectLatest {
-        it.doFailure { throwable ->
-            throwable?.message?.toast()
-            throwable?.message?.let { it1 -> Log.d("iichen", "请求失败  $it1") }
-            doFailure()
-        }
-        it.doSuccess { value ->
-            // 刷新UI
-            doSuccess(value)
-        }
-    }
 }

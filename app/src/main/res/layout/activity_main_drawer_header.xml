@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:padding="15dp"
+    android:layout_gravity="center_horizontal"
+    android:layout_height="wrap_content">
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/drawer_photo"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/img_default" />
+
+    <ImageView
+        android:visibility="gone"
+        android:id="@+id/drawer_level"
+        android:layout_alignEnd="@+id/drawer_photo"
+        android:layout_alignBottom="@+id/drawer_photo"
+        android:layout_gravity="top"
+        android:src="@drawable/level_one"
+        android:layout_marginEnd="-5dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <TextView
+        android:visibility="gone"
+        android:layout_marginTop="15dp"
+        android:layout_below="@+id/drawer_photo"
+        android:layout_centerHorizontal="true"
+        android:textColor="@color/black"
+        android:textStyle="bold"
+        android:textSize="16dp"
+        android:layout_marginLeft="8dp"
+        android:id="@+id/drawer_nick"
+        android:text="iichen"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <LinearLayout
+        android:id="@+id/drawer_lr_ll"
+        android:layout_marginTop="15dp"
+        android:orientation="horizontal"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/drawer_photo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/drawer_login"
+            android:layout_marginEnd="15dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
+            android:text="登录"
+            android:gravity="center"
+            android:textColor="@color/white"
+            android:background="@drawable/bg_text_b0a9d2_5_radius"
+            android:layout_width="80dp"
+            android:layout_height="match_parent"/>
+
+
+        <TextView
+            android:id="@+id/drawer_register"
+            android:layout_marginStart="15dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
+            android:text="注册"
+            android:gravity="center"
+            android:textColor="@color/white"
+            android:background="@drawable/bg_text_b0a9d2_5_radius"
+            android:layout_width="80dp"
+            android:layout_height="match_parent"/>
+    </LinearLayout>
+
+</RelativeLayout>

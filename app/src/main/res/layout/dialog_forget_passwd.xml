@@ -74,7 +74,7 @@
             <TextView
                 android:id="@+id/forget_code_btn"
                 android:layout_gravity="center_vertical"
-                android:background="@drawable/bg_text_ff7000_5_radius"
+                android:background="@drawable/bg_text_67ff7000_5_radius"
                 android:layout_marginStart="10dp"
                 android:text="发送验证码"
                 android:textSize="14dp"

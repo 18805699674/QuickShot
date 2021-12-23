@@ -2,33 +2,55 @@ package cn.iichen.quickshot.ui.home
 
 import android.graphics.Color
 import android.os.Bundle
-import android.view.KeyEvent
-import android.view.MenuItem
-import android.view.View
+import android.util.Log
+import android.view.*
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.activity.viewModels
+import androidx.core.view.GravityCompat
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.FragmentTransaction
 import androidx.recyclerview.widget.LinearLayoutManager
 import cn.iichen.quickshot.adapter.VideoAdapter
 import cn.iichen.quickshot.base.BaseActivity
 import kotlinx.android.synthetic.main.activity_main_content.*
 import cn.iichen.quickshot.R
-import cn.iichen.quickshot.dialog.ForgetDialog
-import cn.iichen.quickshot.dialog.InitTipDialog
-import cn.iichen.quickshot.dialog.LoginDialog
-import cn.iichen.quickshot.dialog.RegisterDialog
+import cn.iichen.quickshot.adapter.NavContentAdapter
+import cn.iichen.quickshot.dialog.*
 import cn.iichen.quickshot.encap.HomeKeyWatcher
 import cn.iichen.quickshot.encap.NiceVideoPlayer
 import cn.iichen.quickshot.encap.NiceVideoPlayerManager
 import cn.iichen.quickshot.ext.*
+import cn.iichen.quickshot.pojo.MenuBean
+import cn.iichen.quickshot.pojo.UserBean
 import cn.iichen.quickshot.utils.mail.MailSender
 import com.blankj.utilcode.util.SnackbarUtils
 import com.google.android.material.navigation.NavigationView
 import com.tencent.mmkv.MMKV
+import de.hdodenhof.circleimageview.CircleImageView
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.activity_main_drawer.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import java.lang.Exception
+import android.widget.EditText
+
+import android.view.MotionEvent
+import cn.iichen.quickshot.pojo.VideoSourceTimeRangeBean
+
+import com.blankj.utilcode.util.KeyboardUtils
+import com.jzxiang.pickerview.TimePickerDialog
+import com.jzxiang.pickerview.data.Type
+import com.jzxiang.pickerview.listener.OnDateSetListener
+import java.text.SimpleDateFormat
+import java.util.*
 
 
-class MainActivity : BaseActivity(),NavigationView.OnNavigationItemSelectedListener {
+class MainActivity : BaseActivity() {
+    private var token: String? = null
+    private var dialog: DialogFragment? = null
     private var videoUrl:String? = null
     private val mViewModel: HomeModel by viewModels()
 
@@ -37,9 +59,16 @@ class MainActivity : BaseActivity(),NavigationView.OnNavigationItemSelectedListe
     private var pressedHome = false
     private var mHomeKeyWatcher: HomeKeyWatcher? = null
 
+
+    private val ioScope = CoroutineScope(Dispatchers.Main + Job() )
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // 初始化展开
+        drawer.openDrawer(GravityCompat.START)
+
 
         mHomeKeyWatcher = HomeKeyWatcher(this)
         mHomeKeyWatcher?.setOnHomePressedListener { pressedHome = true }
@@ -47,7 +76,7 @@ class MainActivity : BaseActivity(),NavigationView.OnNavigationItemSelectedListe
         mHomeKeyWatcher?.startWatch()
 
         val mmkv = MMKV.defaultMMKV()
-        val token = mmkv.getString(Ext.MMKV_KEY_TOKEN,null)
+        token = mmkv.getString(Ext.MMKV_KEY_TOKEN,null)
         val firstOpenApp = mmkv.getBoolean(Ext.MMKV_KEY_FIRST_OPEN,true)
         if(firstOpenApp){
             SnackbarUtils.with(need_login)
@@ -56,14 +85,17 @@ class MainActivity : BaseActivity(),NavigationView.OnNavigationItemSelectedListe
                 .setMessageColor(Color.WHITE)
                 .show()
         }
-        mmkv.putBoolean(Ext.MMKV_KEY_FIRST_OPEN,true)
+        mmkv.putBoolean(Ext.MMKV_KEY_FIRST_OPEN,false)
 
         if(token.isNullOrBlank()){
             need_login.visibility()
-            val dialog = LoginDialog()
-            dialog.show(supportFragmentManager,"Dialog_LoginDialog")
+            dialog = LoginDialog()
+            dialog?.show(supportFragmentManager,"Dialog_LoginDialog")
         }else{ // 请求验证 Token 无效 需要和上面一样的逻辑， 有效获取用户信息
             need_login.gone()
+            token?.apply {
+                mViewModel.getUserInfo(this).observeNonNull(this@MainActivity,{})
+            }
         }
 
 
@@ -71,7 +103,7 @@ class MainActivity : BaseActivity(),NavigationView.OnNavigationItemSelectedListe
 
         handlerRecycleView()
 
-//        handlerModelView()
+        handlerModelView()
 
         handlerViewEvent()
     }
@@ -82,8 +114,140 @@ class MainActivity : BaseActivity(),NavigationView.OnNavigationItemSelectedListe
 //            .transform(GlideCircleTransform(this))
 //            .into(drawer_photo);
 
-        val headerView = nav_view.getHeaderView(0)
-        nav_view.setNavigationItemSelectedListener(this)
+//        val headerView = nav_view.getHeaderView(0)
+//        nav_view.setNavigationItemSelectedListener(this)
+        val data = mutableListOf(
+            MenuBean(R.drawable.time_fill,"切换源"),
+            MenuBean(R.drawable.resource,"分享资源"),
+            MenuBean(R.drawable.activation,"激活码激活"),
+            MenuBean(R.drawable.ad_free,"免广告观看"),
+            // 请求用户信息后 额外添加的  管理员有的权限  不搭建后台 在这里作为后台操作
+//            MenuBean(R.drawable.ad_free,"用户管理"),
+//            MenuBean(R.drawable.ad_free,"增加激活码"),
+//            MenuBean(R.drawable.ad_free,"发放激活码"),
+            )
+        val headView = LayoutInflater.from(this).inflate(R.layout.activity_main_drawer_header,nav_view_recycle,false)
+        val footView = LayoutInflater.from(this).inflate(R.layout.activity_main_drawer_foot,nav_view_recycle,false)
+        val adapter = NavContentAdapter(data)
+        adapter.setHeaderView(headView)
+        adapter.setFooterView(footView)
+        nav_view_recycle.adapter = adapter
+
+        // headerView的点击事件
+        handlerDrawerHeadViewEvent(headView)
+        handlerDrawerFootViewEvent(footView)
+        adapter.addChildClickViewIds(R.id.nav_item_ll)
+        adapter.setOnItemChildClickListener { adapter, view, position ->
+            when(view.id){
+                // 菜单点击
+                R.id.nav_item_ll -> {
+                    when(position){
+//                        切换源
+                        0 -> {
+                            if(videoSourceTimeRangeLoad==null)
+                                ioScope.launch {
+                                     mViewModel.getVideoSourceTimeRange()
+                                }
+                            else{
+                                showVideoTimeSelectorDialog()
+                            }
+                        }
+                        //分享资源
+                        1 -> {
+
+                        }
+                        //激活码激活
+                        2 -> {
+
+                            if(Ext.user==null){
+                                dialog = LoginDialog()
+                                dialog?.show(supportFragmentManager,"Dialog_LoginDialog")
+                            }
+
+                            Ext.user?.apply {
+                                if(enable){
+                                   "已激活".toast()
+                                }else{
+                                    dialog = CodeDialog()
+                                    dialog?.show(supportFragmentManager,"Dialog_CodeDialog")
+                                }
+                            }
+                        }
+                        //免广告观看
+                        3 -> {
+
+                        }
+
+                    }
+                }
+            }
+        }
+    }
+
+    private fun showVideoTimeSelectorDialog() {
+        TimePickerDialog.Builder()
+            .setCallBack { timePickerView, millseconds ->
+                val sdf = SimpleDateFormat("yyyyMMdd")
+                val time: String = sdf.format(Date(millseconds)) // 时间戳转换日期
+                drawer.closeDrawers()
+                loadingView.show()
+                ioScope.launch {
+                    mViewModel.getVideoSourceByTime(time)
+                }
+            }
+            .setCancelStringId("取消")
+            .setSureStringId("确认")
+            .setTitleStringId("切换源")
+            .setYearText("年")
+            .setMonthText("月")
+            .setDayText("日")
+            .setCyclic(false)
+            .setMinMillseconds(videoSourceTimeRangeLoad?.minVideoTime?:System.currentTimeMillis())
+            .setMaxMillseconds(videoSourceTimeRangeLoad?.maxVideoTime?:System.currentTimeMillis())
+            .setCurrentMillseconds(videoSourceTimeRangeLoad?.maxVideoTime?:System.currentTimeMillis())
+            .setThemeColor(Color.parseColor("#FF9D02"))
+            .setType(Type.YEAR_MONTH_DAY)
+            .setWheelItemTextNormalColor(resources.getColor(R.color.timetimepicker_default_text_color))
+            .setWheelItemTextSelectorColor(resources.getColor(R.color.timepicker_toolbar_bg))
+            .setWheelItemTextSize(12)
+            .build().show(supportFragmentManager,"TimePickerDialog")
+    }
+
+    private fun handlerDrawerFootViewEvent(footView: View?) {
+
+    }
+
+    var drawerLevel:ImageView? = null
+    var drawerNick:TextView? = null
+    var drawerLrLl:LinearLayout? = null
+    private fun handlerDrawerHeadViewEvent(headView: View?) {
+        headView?.apply {
+            val drawerPhoto = findViewById<CircleImageView>(R.id.drawer_photo)
+            val drawerLogin = findViewById<TextView>(R.id.drawer_login)
+            val drawerRegister = findViewById<TextView>(R.id.drawer_register)
+
+            drawerLevel = findViewById<ImageView>(R.id.drawer_level)
+            drawerNick = findViewById<TextView>(R.id.drawer_nick)
+            drawerLrLl = findViewById<LinearLayout>(R.id.drawer_lr_ll)
+
+
+            // 头布局 头像 点击到 个人信息
+            drawerPhoto.click {
+                "个人信息".toast()
+            }
+            // 到登录
+            drawerLogin.click {
+                drawer.closeDrawers()
+                dialog = LoginDialog()
+                dialog?.show(supportFragmentManager,"Dialog_LoginDialog")
+            }
+            // 到注册
+            drawerRegister.click {
+                drawer.closeDrawers()
+                dialog = RegisterDialog()
+                dialog?.show(supportFragmentManager,"Dialog_RegisterDialog")
+            }
+        }
     }
 
     var isLoadMore:Boolean = false
@@ -95,9 +259,12 @@ class MainActivity : BaseActivity(),NavigationView.OnNavigationItemSelectedListe
         smartRefresh.apply {
             setOnRefreshListener {
                 try {
-                    videoUrl?.apply {
-                        var prefix = videoUrl!!.split(".")[0]
-                        prefix = prefix.substring(0,prefix.length-1)
+                    if(videoUrl==null){
+                        requestVideo()
+                        finishRefresh(false)
+                    }else{
+                        val lastPointIndex = videoUrl!!.lastIndexOf(".")
+                        val prefix = videoUrl?.substring(0,lastPointIndex-1)
                         mViewModel.curPage = 1
                         isLoadMore = false
                         mViewModel?.getNineTvVideo("$prefix${mViewModel.curPage}.json").observeNonNull(this@MainActivity,{
@@ -105,13 +272,16 @@ class MainActivity : BaseActivity(),NavigationView.OnNavigationItemSelectedListe
                             finishRefresh(it)
                         })
                     }
-                }catch (e:Exception){}
+                }catch (e:Exception){finishRefresh(false)}
             }
             setOnLoadmoreListener {
                 try {
-                    videoUrl?.apply {
-                        var prefix = videoUrl!!.split(".")[0]
-                        prefix = prefix.substring(0,prefix.length-1)
+                    if(videoUrl==null){
+                        requestVideo()
+                        finishRefresh(false)
+                    }else {
+                        val lastPointIndex = videoUrl!!.lastIndexOf(".")
+                        val prefix = videoUrl?.substring(0,lastPointIndex-1)
                         mViewModel.curPage += 1
                         loadingView.show()
                         isLoadMore = true
@@ -120,37 +290,20 @@ class MainActivity : BaseActivity(),NavigationView.OnNavigationItemSelectedListe
                             finishLoadmore(it)
                         })
                     }
-                }catch (e:Exception){}
+                }catch (e:Exception){finishLoadmore(false)}
             }
         }
 
         need_login.setOnClickListener {
-            val dialog = LoginDialog()
-            dialog.show(supportFragmentManager,"Dialog_LoginDialog")
+            dialog = LoginDialog()
+            dialog?.show(supportFragmentManager,"Dialog_LoginDialog")
         }
     }
 
 
+    private var videoSourceTimeRangeLoad: VideoSourceTimeRangeBean.Data? = null
     private fun handlerModelView() {
         mViewModel?.apply {
-
-            // 获取视频源
-            loadingView.show()
-            getVideoSource().observeNonNull(this@MainActivity,{
-                // 获取失败 设置默认
-                if(!it)
-                    videoUrl = "https://nnp35.com/upload_json_live/20211219/videolist_20211219_14_2_-_-_100_1.json"
-            })
-//             第一步
-            // 视频源 Json获取
-            videoJson.observeNonNull(this@MainActivity,{
-                videoUrl = it
-                getNineTvVideo(it).observeNonNull(this@MainActivity,{
-                    loadingView.hide()
-                })
-            })
-
-
 //              第二步
             currentPage.observeNonNull(this@MainActivity,{
                 currentPageNum.text = "$it"
@@ -162,10 +315,108 @@ class MainActivity : BaseActivity(),NavigationView.OnNavigationItemSelectedListe
                 if(!it.isNullOrEmpty())
                     operate.visibility = View.VISIBLE
                 if(isLoadMore)
-                    mAdapter.setList(it)
-                else
                     mAdapter.addData(it)
+                else{
+                    val data = it.toMutableList()
+                    mAdapter.setNewInstance(data)
+                }
             })
+
+            // 用户信息
+            userBean.observeNonNull(this@MainActivity,{
+                if(it.code == Ext.SERVICE_ERROR_CODE){
+                    it.msg.toast()
+                    dialog = LoginDialog()
+                    dialog?.show(supportFragmentManager,"Dialog_LoginDialog")
+                }else{
+                    dialog?.dismissAllowingStateLoss()
+                    Ext.user = it.data
+                    drawerLevel?.setLevel(if(it.data.vip) 6 else it.data.level)
+                    drawerLrLl?.gone()
+                    drawerNick?.visibility()
+                    drawerNick?.text = it.data.nick
+                    val mmkv:MMKV = MMKV.defaultMMKV()
+                    mmkv.putString(Ext.MMKV_KEY_TOKEN,it.data.token)
+
+                    requestVideo()
+                }
+            })
+
+            videoJson.observeNonNull(this@MainActivity,{
+                if(it.isNotEmpty()){
+                    videoUrl = it
+                    Log.d("iichen","########## $videoUrl    $it")
+                    getNineTvVideo(it).observeNonNull(this@MainActivity,{
+                        loadingView.hide()
+                    })
+                }else{
+                    "今日资源未添加".toast()
+                    loadingView.hide()
+                }
+            })
+
+            // 使用激活码
+            activateCodeBean.observeNonNull(this@MainActivity,{
+                if(it.code == Ext.SERVICE_ERROR_CODE){
+                    it.msg.toast()
+                }else{
+                    dialog?.dismissAllowingStateLoss()
+                    it.data.toast()
+                    token?.apply {
+                        mViewModel.getUserInfo(this).observeNonNull(this@MainActivity,{})
+                    }
+                }
+            })
+
+            // 获取视频源 最小和最大时间 用于显示
+            videoSourceTimeRangeBean.observeNonNull(this@MainActivity,{
+                if(it.code == Ext.SERVICE_ERROR_CODE){
+                    it.msg.toast()
+                }else{
+                    videoSourceTimeRangeLoad = it.data
+                    showVideoTimeSelectorDialog()
+                }
+            })
+
+            // 获取指定日期的 视频源
+            videoSourceBean.observeNonNull(this@MainActivity,{
+                if(it.code == Ext.SERVICE_ERROR_CODE){
+                    it.msg.toast()
+                }else{
+                    mViewModel.setVideoUrl(it.data?.url)
+                }
+            })
+        }
+    }
+
+    private fun checkUserEnable() :Boolean {
+        Ext.user?.apply {
+            if(enable){
+                return true
+            }else{
+                dialog = CodeDialog()
+                dialog?.show(supportFragmentManager,"Dialog_CodeDialog")
+            }
+        }
+        return false
+    }
+
+    private fun requestVideo(){
+        val enable = checkUserEnable()
+        if(enable){
+            loadingView.show()
+            need_login.gone()
+
+            ioScope.launch {
+                mViewModel.getVideoSource()
+            }
+        }else{
+            need_login.visibility()
+            need_login.text = "点击激活"
+            need_login.setOnClickListener {
+                dialog = CodeDialog()
+                dialog?.show(supportFragmentManager,"Dialog_CodeDialog")
+            }
         }
     }
 
@@ -184,19 +435,16 @@ class MainActivity : BaseActivity(),NavigationView.OnNavigationItemSelectedListe
 
     }
 
+    var isExit:Boolean  = false
     override fun onBackPressed() {
         if (NiceVideoPlayerManager.instance().onBackPressd()) {
             return
         }
 
-        super.onBackPressed()
-    }
-
-
-    var isExit:Boolean  = false
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        //2s内按2次返回键退出
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
+        if(drawer.isDrawerOpen(GravityCompat.START)){
+            drawer.closeDrawer(GravityCompat.START)
+            return
+        }else{
             if (isExit) {//第2次返回键
                 finish()
             } else {//第一次返回键
@@ -205,11 +453,15 @@ class MainActivity : BaseActivity(),NavigationView.OnNavigationItemSelectedListe
                     isExit = false;
                 },1500)
                 "再按一次退出!".toast()
-                return  true
+                return
             }
         }
-        return super.onKeyDown(keyCode, event)
+
+        super.onBackPressed()
     }
+
+
+
 
 
     override fun onRestart() {
@@ -231,37 +483,28 @@ class MainActivity : BaseActivity(),NavigationView.OnNavigationItemSelectedListe
         mHomeKeyWatcher?.stopWatch()
     }
 
-    override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        when (item.itemId){
-             R.id.switching_time -> {
-                "switching_time".toast()
-                 val dialog = LoginDialog()
-                 dialog.show(supportFragmentManager,"Dialog_CodeActiveDialog")
-             }
-             R.id.share_resources -> {
-                "share_resources".toast()
-                 val dialog = RegisterDialog()
-                 dialog.show(supportFragmentManager,"Dialog_CodeActiveDialog")
-             }
-             R.id.video_integral -> {
-                "video_integral".toast()
-                 val dialog = ForgetDialog()
-                 dialog.show(supportFragmentManager,"Dialog_CodeActiveDialog")
-             }
-              R.id.code_activation -> {
-                "code_activation".toast()
-                  val dialog = InitTipDialog()
-                  dialog.show(supportFragmentManager,"Dialog_CodeActiveDialog")
-             }
-            R.id.ad_free_viewing -> {
-                "ad_free_viewing".toast()
-                MailSender.send("1826522282@qq.com","123456")
-             }
+
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        if (ev.action == MotionEvent.ACTION_DOWN) {
+            val v = currentFocus
+            if (isShouldHideKeyboard(v, ev)) {
+                KeyboardUtils.hideSoftInput(this)
+            }
         }
-        //设置菜单项选中
-        item.isCheckable = false
-        //关闭Drawer
-        drawer.closeDrawers()
-        return true
+        return super.dispatchTouchEvent(ev)
+    }
+
+    // Return whether touch the view.
+    private fun isShouldHideKeyboard(v: View?, event: MotionEvent): Boolean {
+        if (v is EditText) {
+            val l = intArrayOf(0, 0)
+            v.getLocationOnScreen(l)
+            val left = l[0]
+            val top = l[1]
+            val bottom = top + v.getHeight()
+            val right = left + v.getWidth()
+            return !(event.rawX > left && event.rawX < right && event.rawY > top && event.rawY < bottom)
+        }
+        return false
     }
 }

@@ -2,13 +2,12 @@ package cn.iichen.quickshot.respository
 
 import cn.iichen.diverseweather.data.remote.ApiResult
 import cn.iichen.quickshot.net.RetrofitClient
-import cn.iichen.quickshot.pojo.NineTvBean
-import cn.iichen.quickshot.pojo.VideoSourceBean
+import cn.iichen.quickshot.pojo.*
+import cn.iichen.quickshot.pojo.params.RegisterBean
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import retrofit2.Retrofit
 import java.lang.Exception
 
 /**
@@ -50,7 +49,7 @@ class RepositoryImpl : Repository {
                 val nineTvBean = RetrofitClient.serviceThird.getNineTvVideo(url)
                 emit(ApiResult.Success(nineTvBean))
             }catch (e: Exception){
-                emit(ApiResult.Failure(e.cause))
+                emit(ApiResult.Failure(e.message))
             }
         }.flowOn(Dispatchers.IO)
     }
@@ -61,7 +60,73 @@ class RepositoryImpl : Repository {
                 val videoSourceBean = RetrofitClient.serviceII.getVideoSource()
                 emit(ApiResult.Success(videoSourceBean))
             }catch (e: Exception){
-                emit(ApiResult.Failure(e.cause))
+                emit(ApiResult.Failure(e.message))
+            }
+        }.flowOn(Dispatchers.IO)
+    }
+
+    override suspend fun doRegister(registerBean: RegisterBean): Flow<ApiResult<UserBean>> {
+        return flow {
+            try {
+                val userBean = RetrofitClient.serviceII.doRegister(registerBean)
+                emit(ApiResult.Success(userBean))
+            }catch (e: Exception){
+                emit(ApiResult.Failure(e.message))
+            }
+        }.flowOn(Dispatchers.IO)
+    }
+
+    override suspend fun doLogin(loginBean: RegisterBean): Flow<ApiResult<UserBean>> {
+        return flow {
+            try {
+                val userBean = RetrofitClient.serviceII.doLogin(loginBean)
+                emit(ApiResult.Success(userBean))
+            }catch (e: Exception){
+                emit(ApiResult.Failure(e.message))
+            }
+        }.flowOn(Dispatchers.IO)
+    }
+
+    override suspend fun getUserInfo(token: String): Flow<ApiResult<UserBean>> {
+        return flow {
+            try {
+                val userBean = RetrofitClient.serviceII.getUserInfo(token)
+                emit(ApiResult.Success(userBean))
+            }catch (e: Exception){
+                emit(ApiResult.Failure(e.message))
+            }
+        }.flowOn(Dispatchers.IO)
+    }
+
+    override suspend fun doActiveAccount(userId:String,code:String): Flow<ApiResult<ActivateCodeBean>>{
+        return flow {
+            try {
+                val userBean = RetrofitClient.serviceII.doActiveAccount(code,userId)
+                emit(ApiResult.Success(userBean))
+            }catch (e: Exception){
+                emit(ApiResult.Failure(e.message))
+            }
+        }.flowOn(Dispatchers.IO)
+    }
+
+    override suspend fun getVideoSourceTimeRange(): Flow<ApiResult<VideoSourceTimeRangeBean>> {
+        return flow {
+            try {
+                val userBean = RetrofitClient.serviceII.getVideoSourceTimeRange()
+                emit(ApiResult.Success(userBean))
+            }catch (e: Exception){
+                emit(ApiResult.Failure(e.message))
+            }
+        }.flowOn(Dispatchers.IO)
+    }
+
+    override suspend fun getVideoSourceByTime(time: String): Flow<ApiResult<VideoSourceBean>> {
+        return flow {
+            try {
+                val userBean = RetrofitClient.serviceII.getVideoSourceByTime(time)
+                emit(ApiResult.Success(userBean))
+            }catch (e: Exception){
+                emit(ApiResult.Failure(e.message))
             }
         }.flowOn(Dispatchers.IO)
     }

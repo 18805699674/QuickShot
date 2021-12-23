@@ -1,5 +1,7 @@
 package cn.iichen.quickshot.base
 
+import android.annotation.SuppressLint
+import android.graphics.Color
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.gyf.immersionbar.ImmersionBar
@@ -42,8 +44,6 @@ abstract  class BaseActivity : AppCompatActivity() {
 
         ImmersionBar.with(this)
             .statusBarDarkFont(true)
-            .fitsSystemWindows(true)
-            .transparentBar()
             .init()
     }
 }

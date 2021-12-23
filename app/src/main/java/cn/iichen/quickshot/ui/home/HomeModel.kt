@@ -5,15 +5,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
-import cn.iichen.diverseweather.data.remote.ApiResult
 import cn.iichen.diverseweather.data.remote.doFailure
 import cn.iichen.diverseweather.data.remote.doSuccess
-import cn.iichen.quickshot.ext.collectLatestII
 import cn.iichen.quickshot.ext.toast
-import cn.iichen.quickshot.pojo.Data
-import cn.iichen.quickshot.pojo.VideoSourceBean
+import cn.iichen.quickshot.pojo.*
+import cn.iichen.quickshot.pojo.params.RegisterBean
 import cn.iichen.quickshot.respository.RepositoryImpl
-import com.google.gson.JsonStreamParser
 import kotlinx.coroutines.flow.collectLatest
 
 /**
@@ -84,18 +81,99 @@ class HomeModel : ViewModel() {
 
     private val _videoJson: MutableLiveData<String> = MutableLiveData()
     val videoJson: LiveData<String> get() = _videoJson
+
+
     // 获取视频源
-    fun getVideoSource() = liveData {
+    suspend fun getVideoSource(){
         repository.getVideoSource().collectLatest {
+            it.doFailure { throwable ->
+            }
+            it.doSuccess { value ->
+                _videoJson.value = value.data?.url?:""
+            }
+        }
+    }
+
+    fun setVideoUrl(videoUrl: String?) {
+        videoUrl?.apply {
+            _videoJson.value = this
+        }
+    }
+
+
+    private val _userBean: MutableLiveData<UserBean> = MutableLiveData()
+    val userBean: LiveData<UserBean> get() = _userBean
+    suspend fun doRegister(registerBean: RegisterBean) {
+        repository.doRegister(registerBean).collectLatest {
+            it.doFailure { throwable ->
+            }
+            it.doSuccess { value ->
+                _userBean.value = value
+            }
+        }
+    }
+
+    suspend fun doLogin(registerBean: RegisterBean) {
+        repository.doLogin(registerBean).collectLatest {
+            it.doFailure { throwable ->
+
+            }
+            it.doSuccess { value ->
+                _userBean.value = value
+            }
+        }
+    }
+
+    fun getUserInfo(token: String) = liveData {
+        repository.getUserInfo(token).collectLatest {
             it.doFailure { throwable ->
                 emit(false)
             }
             it.doSuccess { value ->
                 emit(true)
-                _videoJson.value = value.data.url
+                _userBean.value = value
             }
         }
     }
+
+    private val _activateCodeBean: MutableLiveData<ActivateCodeBean> = MutableLiveData()
+    val activateCodeBean: LiveData<ActivateCodeBean> get() = _activateCodeBean
+    suspend fun doActiveAccount(userId: String, code: String) {
+        repository.doActiveAccount(userId,code).collectLatest {
+            it.doFailure { throwable ->
+            }
+            it.doSuccess { value ->
+                _activateCodeBean.value = value
+            }
+        }
+    }
+
+
+    private val _videoSourceTimeRangeBean: MutableLiveData<VideoSourceTimeRangeBean> = MutableLiveData()
+    val videoSourceTimeRangeBean: LiveData<VideoSourceTimeRangeBean> get() = _videoSourceTimeRangeBean
+    suspend fun getVideoSourceTimeRange(){
+        repository.getVideoSourceTimeRange().collectLatest {
+            it.doFailure { throwable ->
+            }
+            it.doSuccess { value ->
+                _videoSourceTimeRangeBean.value = value
+            }
+        }
+    }
+
+    private val _videoSourceBean: MutableLiveData<VideoSourceBean> = MutableLiveData()
+    val videoSourceBean: LiveData<VideoSourceBean> get() = _videoSourceBean
+    suspend fun getVideoSourceByTime(time: String) {
+        repository.getVideoSourceByTime(time).collectLatest {
+            it.doFailure { throwable ->
+            }
+            it.doSuccess { value ->
+                _videoSourceBean.value = value
+            }
+        }
+    }
+
+
 }
 
 

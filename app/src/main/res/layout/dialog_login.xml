@@ -15,7 +15,7 @@
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/login_username"
             app:hintEnabled="true"
-            android:hint="输入用户名称"
+            android:hint="输入用户邮箱"
             app:startIconDrawable="@drawable/user"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -54,9 +54,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
-        <Button
+        <cn.iichen.quickshot.widget.loading.LoadingButton
             android:id="@+id/login_do"
             android:layout_marginTop="30dp"
+            android:layout_gravity="center_horizontal"
+            android:gravity="center"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
             android:text="立即登录"
             android:textSize="16dp"
             android:textColor="@color/white"

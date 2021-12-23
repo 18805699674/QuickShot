@@ -36,8 +36,8 @@
             app:errorEnabled="true"
             app:hintEnabled="true"
             app:counterEnabled="true"
-            app:counterMaxLength="10"
-            android:hint="输入账户密码"
+            app:counterMaxLength="15"
+            android:hint="输入账户密码(6-15位)"
             app:passwordToggleEnabled="true"
             app:startIconDrawable="@drawable/secret"
             android:layout_width="match_parent"
@@ -46,6 +46,7 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:layout_width="match_parent"
                 style="@style/edit_common"
+                android:imeOptions="actionNext"
                 android:inputType="textPassword"
                 android:layout_height="wrap_content"/>
         </com.google.android.material.textfield.TextInputLayout>
@@ -56,7 +57,7 @@
             app:errorEnabled="true"
             app:hintEnabled="true"
             app:counterEnabled="true"
-            app:counterMaxLength="10"
+            app:counterMaxLength="50"
             android:hint="输入邮箱地址"
             app:startIconDrawable="@drawable/email"
             android:layout_width="match_parent"
@@ -65,6 +66,7 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:layout_width="match_parent"
                 style="@style/edit_common"
+                android:imeOptions="actionNext"
                 android:layout_height="wrap_content"/>
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -92,7 +94,7 @@
             <TextView
                 android:id="@+id/register_code_btn"
                 android:layout_gravity="center_vertical"
-                android:background="@drawable/bg_text_ff7000_5_radius"
+                android:background="@drawable/bg_text_ffff7000_5_radius"
                 android:layout_marginStart="10dp"
                 android:text="发送验证码"
                 android:textSize="14dp"
@@ -105,10 +107,14 @@
                 android:layout_height="wrap_content"/>
         </LinearLayout>
 
-        <Button
+        <cn.iichen.quickshot.widget.loading.LoadingButton
             android:id="@+id/register_btn"
             android:layout_marginTop="30dp"
             android:text="立即注册"
+            android:gravity="center"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:layout_gravity="center_horizontal"
             android:textSize="16dp"
             android:textColor="@color/white"
             android:background="@drawable/bg_text_f74848_5_radius"

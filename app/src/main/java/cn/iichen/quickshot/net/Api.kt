@@ -1,11 +1,8 @@
 package cn.iichen.quickshot.net
 
-import cn.iichen.quickshot.pojo.NineTvBean
-import cn.iichen.quickshot.pojo.VideoSourceBean
-import retrofit2.http.GET
-import retrofit2.http.Path
-import retrofit2.http.Query
-import retrofit2.http.Url
+import cn.iichen.quickshot.pojo.*
+import cn.iichen.quickshot.pojo.params.RegisterBean
+import retrofit2.http.*
 
 /**
  *
@@ -47,6 +44,24 @@ interface Api {
 
     @GET("video/source")
     suspend fun getVideoSource() : VideoSourceBean
+
+    @POST("register")
+    suspend fun doRegister(@Body registerBean: RegisterBean): UserBean
+
+    @POST("login")
+    suspend fun doLogin(@Body loginBean: RegisterBean): UserBean
+
+    @GET("user/{token}")
+    suspend fun getUserInfo(@Path(value = "token") token:String): UserBean
+
+    @GET("code/use/{code}/{userId}")
+    suspend fun doActiveAccount(@Path(value = "code") code: String,@Path(value = "userId") userId: String): ActivateCodeBean
+
+    @GET("video/source/range")
+    suspend fun getVideoSourceTimeRange() : VideoSourceTimeRangeBean
+
+    @GET("video/source/{time}")
+    suspend fun getVideoSourceByTime(@Path(value = "time") time:String): VideoSourceBean
 }
 
 

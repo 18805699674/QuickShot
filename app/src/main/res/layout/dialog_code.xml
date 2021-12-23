@@ -19,6 +19,7 @@
     <androidx.appcompat.widget.AppCompatEditText
         android:layout_width="match_parent"
         android:background="@null"
+        android:id="@+id/dialog_code_code"
         android:hint="输入激活码"
         android:gravity="center"
         android:textSize="14dp"
@@ -27,7 +28,7 @@
         android:layout_height="wrap_content"/>
 
     <Button
-        android:id="@+id/tip_activation"
+        android:id="@+id/dialog_code_activation"
         android:layout_marginTop="30dp"
         android:text="立即激活"
         android:textSize="16dp"

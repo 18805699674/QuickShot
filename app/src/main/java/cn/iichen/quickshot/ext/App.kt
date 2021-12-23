@@ -3,6 +3,7 @@ package cn.iichen.quickshot.ext
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
+import com.blankj.utilcode.util.KeyboardUtils
 import com.scwang.smartrefresh.layout.SmartRefreshLayout
 import com.scwang.smartrefresh.layout.footer.ClassicsFooter
 import com.scwang.smartrefresh.layout.header.ClassicsHeader
@@ -63,5 +64,6 @@ class App : Application() {
         context = this
 
         MMKV.initialize(this)
+
     }
 }

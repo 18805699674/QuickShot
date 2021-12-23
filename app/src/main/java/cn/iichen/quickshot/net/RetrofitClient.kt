@@ -40,7 +40,8 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
     private const val BASE_URL_THIRD = "https://nnp35.com/"
-    private const val BASE_URL_II = "http://100.120.127.154/"
+//    private const val BASE_URL_II = "http://100.120.127.154/"
+    private const val BASE_URL_II = "http://30cd4e40.cpolar.io/"
 
     private var retrofitThird: Retrofit? = null
     private var retrofitII: Retrofit? = null
