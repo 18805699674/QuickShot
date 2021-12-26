@@ -1,17 +1,14 @@
 package cn.iichen.quickshot.ui.home
 
-import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.liveData
+import androidx.lifecycle.*
 import cn.iichen.diverseweather.data.remote.doFailure
 import cn.iichen.diverseweather.data.remote.doSuccess
-import cn.iichen.quickshot.ext.toast
+import cn.iichen.quickshot.adapter.VideoAdapter
 import cn.iichen.quickshot.pojo.*
 import cn.iichen.quickshot.pojo.params.RegisterBean
 import cn.iichen.quickshot.respository.RepositoryImpl
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 /**
  *
@@ -52,8 +49,9 @@ class HomeModel : ViewModel() {
         current_page: 2,
         last_page: 68,
      */
+    val mAdapter by lazy { VideoAdapter() }
 
-    private val repository  =  RepositoryImpl()
+    private val repository = RepositoryImpl()
 
     // 记录当前页 刷新使用
     var curPage = 1
@@ -65,7 +63,7 @@ class HomeModel : ViewModel() {
     private val _videoList: MutableLiveData<List<Data>> = MutableLiveData()
     val videoList: LiveData<List<Data>> get() = _videoList
 
-    fun getNineTvVideo(url:String) = liveData {
+    fun getNineTvVideo(url: String) = liveData {
         repository.getNineTvVideo(url).collectLatest {
             it.doFailure { throwable ->
                 emit(false)
@@ -79,17 +77,17 @@ class HomeModel : ViewModel() {
         }
     }
 
-    private val _videoJson: MutableLiveData<String> = MutableLiveData()
+    private val _videoJson: MutableLiveData<String> = MutableLiveData(null)
     val videoJson: LiveData<String> get() = _videoJson
 
 
     // 获取视频源
-    suspend fun getVideoSource(){
+    suspend fun getVideoSource() {
         repository.getVideoSource().collectLatest {
             it.doFailure { throwable ->
             }
             it.doSuccess { value ->
-                _videoJson.value = value.data?.url?:""
+                _videoJson.value = value.data?.url ?: ""
             }
         }
     }
@@ -136,22 +134,23 @@ class HomeModel : ViewModel() {
         }
     }
 
-    private val _activateCodeBean: MutableLiveData<ActivateCodeBean> = MutableLiveData()
-    val activateCodeBean: LiveData<ActivateCodeBean> get() = _activateCodeBean
+    private val _baseBean: MutableLiveData<BaseBean> = MutableLiveData()
+    val baseBean: LiveData<BaseBean> get() = _baseBean
     suspend fun doActiveAccount(userId: String, code: String) {
-        repository.doActiveAccount(userId,code).collectLatest {
+        repository.doActiveAccount(userId, code).collectLatest {
             it.doFailure { throwable ->
             }
             it.doSuccess { value ->
-                _activateCodeBean.value = value
+                _baseBean.value = value
             }
         }
     }
 
 
-    private val _videoSourceTimeRangeBean: MutableLiveData<VideoSourceTimeRangeBean> = MutableLiveData()
+    private val _videoSourceTimeRangeBean: MutableLiveData<VideoSourceTimeRangeBean> =
+        MutableLiveData()
     val videoSourceTimeRangeBean: LiveData<VideoSourceTimeRangeBean> get() = _videoSourceTimeRangeBean
-    suspend fun getVideoSourceTimeRange(){
+    suspend fun getVideoSourceTimeRange() {
         repository.getVideoSourceTimeRange().collectLatest {
             it.doFailure { throwable ->
             }
@@ -174,6 +173,90 @@ class HomeModel : ViewModel() {
     }
 
 
+    private val _videoChannelBean: MutableLiveData<VideoChannelBean> = MutableLiveData()
+    val videoChannelBean: LiveData<VideoChannelBean> get() = _videoChannelBean
+    suspend fun getVideoChannels() {
+        repository.getVideoChannels().collectLatest {
+            it.doFailure { throwable ->
+            }
+            it.doSuccess { value ->
+                _videoChannelBean.value = value
+            }
+        }
+    }
+
+    private val _videoTagsBean: MutableLiveData<VideoTagsBean> = MutableLiveData()
+    val videoTagsBean: LiveData<VideoTagsBean> get() = _videoTagsBean
+    suspend fun getVideoTags() {
+        repository.getVideoTags().collectLatest {
+            it.doFailure { throwable ->
+            }
+            it.doSuccess { value ->
+                _videoTagsBean.value = value
+            }
+        }
+    }
+
+    private val _favoriteListBean: MutableLiveData<FavoriteListBean> = MutableLiveData()
+    val favoriteListBean: LiveData<FavoriteListBean> get() = _favoriteListBean
+    fun getFavorite(userId: String) {
+        viewModelScope.launch {
+            repository.getFavorite(userId).collectLatest {
+                it.doFailure { throwable ->
+                }
+                it.doSuccess { value ->
+                    _favoriteListBean.value = value
+                }
+            }
+        }
+    }
+//    ---------------------------------------------------------------------------------------
+//    ---------------------------------------------------------------------------------------
+
+    fun paging(source: String, curPage: Int): String {
+        val lastPointIndex = source.lastIndexOf(".")
+        val prefix = source.substring(0, lastPointIndex - 1)
+        return "$prefix$curPage.json"
+    }
+
+
+    var hvTagChannel:Boolean = false
+    var originVideoUrl:String = ""
+    fun channel(source: String, id: Int): String {
+        var mSource = source
+        if(source.isNotEmpty()){
+            if(hvTagChannel){
+                mSource = originVideoUrl
+            }else{
+                originVideoUrl = mSource
+                hvTagChannel = true
+            }
+            val ketIndex = mSource.lastIndexOf("-")
+            val prefix = mSource.substring(0, ketIndex)
+            val suffix = mSource.substring(ketIndex + 1)
+            setVideoUrl("$prefix$id$suffix")
+            return "$prefix$id$suffix"
+        }
+        return mSource
+    }
+
+    fun tag(source: String, id: Int): String {
+        var mSource = source
+        if(source.isNotEmpty()){
+            if(hvTagChannel){
+                mSource = originVideoUrl
+            }else{
+                originVideoUrl = mSource
+                hvTagChannel = true
+            }
+            val ketIndex = mSource.indexOf("-")
+            val prefix = mSource.substring(0, ketIndex)
+            val suffix = mSource.substring(ketIndex + 1)
+            setVideoUrl("$prefix$id$suffix")
+            return "$prefix$id$suffix"
+        }
+        return mSource
+    }
 }
 
 

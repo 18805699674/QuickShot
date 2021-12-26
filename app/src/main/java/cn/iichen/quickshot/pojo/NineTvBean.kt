@@ -1,8 +1,5 @@
 package cn.iichen.quickshot.pojo
 
-import androidx.versionedparcelable.ParcelField
-import cn.iichen.quickshot.encap.TxVideoPlayerController
-
 data class NineTvBean(
     val current_page: Int,
     val `data`: List<Data>,
@@ -15,7 +12,7 @@ data class Data(
     val comefrom: Int,
     val comefrom_title: String,
     val description: String,
-    val id: Int,
+    val id: Long,
     val is_bloger: Int,
     val is_vip: Int,
     val panorama: String,

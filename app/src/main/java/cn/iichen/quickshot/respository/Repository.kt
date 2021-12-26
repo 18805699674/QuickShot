@@ -2,8 +2,10 @@ package cn.iichen.quickshot.respository
 
 import cn.iichen.diverseweather.data.remote.ApiResult
 import cn.iichen.quickshot.pojo.*
+import cn.iichen.quickshot.pojo.params.FavoriteBean
 import cn.iichen.quickshot.pojo.params.RegisterBean
 import kotlinx.coroutines.flow.Flow
+import retrofit2.Call
 
 /**
  *
@@ -49,11 +51,17 @@ interface Repository {
 
     suspend fun getUserInfo(token: String): Flow<ApiResult<UserBean>>
 
-    suspend fun doActiveAccount(userId:String,code:String): Flow<ApiResult<ActivateCodeBean>>
+    suspend fun doActiveAccount(userId:String,code:String): Flow<ApiResult<BaseBean>>
 
     suspend fun getVideoSourceTimeRange() : Flow<ApiResult<VideoSourceTimeRangeBean>>
 
     suspend fun getVideoSourceByTime(time: String): Flow<ApiResult<VideoSourceBean>>
+
+    suspend fun getVideoChannels(): Flow<ApiResult<VideoChannelBean>>
+
+    suspend fun getVideoTags(): Flow<ApiResult<VideoTagsBean>>
+
+    suspend fun getFavorite(userId: String): Flow<ApiResult<FavoriteListBean>>
 }
 
 

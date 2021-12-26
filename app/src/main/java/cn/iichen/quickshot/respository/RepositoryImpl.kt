@@ -1,13 +1,19 @@
 package cn.iichen.quickshot.respository
 
+import android.util.Log
 import cn.iichen.diverseweather.data.remote.ApiResult
+import cn.iichen.quickshot.ext.doEnqueue
 import cn.iichen.quickshot.net.RetrofitClient
 import cn.iichen.quickshot.pojo.*
+import cn.iichen.quickshot.pojo.params.FavoriteBean
 import cn.iichen.quickshot.pojo.params.RegisterBean
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.lang.Exception
 
 /**
@@ -98,7 +104,7 @@ class RepositoryImpl : Repository {
         }.flowOn(Dispatchers.IO)
     }
 
-    override suspend fun doActiveAccount(userId:String,code:String): Flow<ApiResult<ActivateCodeBean>>{
+    override suspend fun doActiveAccount(userId:String,code:String): Flow<ApiResult<BaseBean>>{
         return flow {
             try {
                 val userBean = RetrofitClient.serviceII.doActiveAccount(code,userId)
@@ -125,6 +131,39 @@ class RepositoryImpl : Repository {
             try {
                 val userBean = RetrofitClient.serviceII.getVideoSourceByTime(time)
                 emit(ApiResult.Success(userBean))
+            }catch (e: Exception){
+                emit(ApiResult.Failure(e.message))
+            }
+        }.flowOn(Dispatchers.IO)
+    }
+
+    override suspend fun getVideoChannels(): Flow<ApiResult<VideoChannelBean>> {
+        return flow {
+            try {
+                val videoChannelBean = RetrofitClient.serviceII.getVideoChannels()
+                emit(ApiResult.Success(videoChannelBean))
+            }catch (e: Exception){
+                emit(ApiResult.Failure(e.message))
+            }
+        }.flowOn(Dispatchers.IO)
+    }
+
+    override suspend fun getVideoTags(): Flow<ApiResult<VideoTagsBean>> {
+        return flow {
+            try {
+                val videoTagsBean = RetrofitClient.serviceII.getVideoTags()
+                emit(ApiResult.Success(videoTagsBean))
+            }catch (e: Exception){
+                emit(ApiResult.Failure(e.message))
+            }
+        }.flowOn(Dispatchers.IO)
+    }
+
+    override suspend fun getFavorite(userId: String): Flow<ApiResult<FavoriteListBean>> {
+        return flow {
+            try {
+                val favoriteListBean = RetrofitClient.serviceII.getFavorite(userId)
+                emit(ApiResult.Success(favoriteListBean))
             }catch (e: Exception){
                 emit(ApiResult.Failure(e.message))
             }

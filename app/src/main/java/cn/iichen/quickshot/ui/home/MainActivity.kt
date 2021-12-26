@@ -2,7 +2,6 @@ package cn.iichen.quickshot.ui.home
 
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -10,9 +9,7 @@ import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.FragmentTransaction
 import androidx.recyclerview.widget.LinearLayoutManager
-import cn.iichen.quickshot.adapter.VideoAdapter
 import cn.iichen.quickshot.base.BaseActivity
 import kotlinx.android.synthetic.main.activity_main_content.*
 import cn.iichen.quickshot.R
@@ -22,28 +19,22 @@ import cn.iichen.quickshot.encap.HomeKeyWatcher
 import cn.iichen.quickshot.encap.NiceVideoPlayer
 import cn.iichen.quickshot.encap.NiceVideoPlayerManager
 import cn.iichen.quickshot.ext.*
-import cn.iichen.quickshot.pojo.MenuBean
-import cn.iichen.quickshot.pojo.UserBean
-import cn.iichen.quickshot.utils.mail.MailSender
 import com.blankj.utilcode.util.SnackbarUtils
-import com.google.android.material.navigation.NavigationView
 import com.tencent.mmkv.MMKV
 import de.hdodenhof.circleimageview.CircleImageView
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import java.lang.Exception
 import android.widget.EditText
 
 import android.view.MotionEvent
-import cn.iichen.quickshot.pojo.VideoSourceTimeRangeBean
+import cn.iichen.quickshot.pojo.*
+import com.alibaba.fastjson.JSONObject
 
 import com.blankj.utilcode.util.KeyboardUtils
 import com.jzxiang.pickerview.TimePickerDialog
 import com.jzxiang.pickerview.data.Type
-import com.jzxiang.pickerview.listener.OnDateSetListener
+import kotlinx.android.synthetic.main.tx_video_palyer_controller.*
+import kotlinx.coroutines.*
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -54,17 +45,18 @@ class MainActivity : BaseActivity() {
     private var videoUrl:String? = null
     private val mViewModel: HomeModel by viewModels()
 
-    private val mAdapter by lazy { VideoAdapter() }
-
     private var pressedHome = false
     private var mHomeKeyWatcher: HomeKeyWatcher? = null
 
 
-    private val ioScope = CoroutineScope(Dispatchers.Main + Job() )
+//    private val ioScope = CoroutineScope(Dispatchers.Main + Job() )
+    private val ioScope = MainScope()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
 
         // 初始化展开
         drawer.openDrawer(GravityCompat.START)
@@ -119,8 +111,11 @@ class MainActivity : BaseActivity() {
         val data = mutableListOf(
             MenuBean(R.drawable.time_fill,"切换源"),
             MenuBean(R.drawable.resource,"分享资源"),
+            MenuBean(R.drawable.favorite,"我的收藏"),
             MenuBean(R.drawable.activation,"激活码激活"),
-            MenuBean(R.drawable.ad_free,"免广告观看"),
+            MenuBean(R.drawable.searchs,"当前源搜索"),
+            MenuBean(R.drawable.channel,"指定视频频道"),
+            MenuBean(R.drawable.tags,"指定视频标签"),
             // 请求用户信息后 额外添加的  管理员有的权限  不搭建后台 在这里作为后台操作
 //            MenuBean(R.drawable.ad_free,"用户管理"),
 //            MenuBean(R.drawable.ad_free,"增加激活码"),
@@ -156,9 +151,16 @@ class MainActivity : BaseActivity() {
                         1 -> {
 
                         }
-                        //激活码激活
+                        //我的收藏
                         2 -> {
-
+                            Ext.user?.userId?.let {
+                                drawer.closeDrawers()
+                                loadingView.show()
+                                mViewModel.getFavorite(it)
+                            }
+                        }
+                        //激活码激活
+                        3 -> {
                             if(Ext.user==null){
                                 dialog = LoginDialog()
                                 dialog?.show(supportFragmentManager,"Dialog_LoginDialog")
@@ -166,18 +168,45 @@ class MainActivity : BaseActivity() {
 
                             Ext.user?.apply {
                                 if(enable){
-                                   "已激活".toast()
+                                    "已激活".toast()
                                 }else{
                                     dialog = CodeDialog()
                                     dialog?.show(supportFragmentManager,"Dialog_CodeDialog")
                                 }
                             }
                         }
-                        //免广告观看
-                        3 -> {
+                        //当前源搜索
+                        4 -> {
+                            val curVideoDataList: MutableList<Data> = mViewModel.mAdapter.data
+                            dialog = SearchDialog(curVideoDataList)
+                            dialog?.show(supportFragmentManager,"Dialog_SearchDialog")
 
+                            drawer.closeDrawers()
                         }
-
+                        //指定视频频道
+                        5 -> {
+                            drawer.closeDrawers()
+                            if(mViewModel.videoChannelBean.value==null) {
+                                ioScope.launch {
+                                    loadingView.show()
+                                    mViewModel.getVideoChannels()
+                                }
+                            }else{
+                                openBottomChanelSheetSelect(mViewModel.videoChannelBean.value!!.data)
+                            }
+                        }
+                        //指定视频标签
+                        6 -> {
+                            drawer.closeDrawers()
+                            if(mViewModel.videoTagsBean.value==null) {
+                                ioScope.launch {
+                                    loadingView.show()
+                                    mViewModel.getVideoTags()
+                                }
+                            }else{
+                                openBottomTagsSheetSelect(mViewModel.videoTagsBean.value!!.data)
+                            }
+                        }
                     }
                 }
             }
@@ -263,11 +292,9 @@ class MainActivity : BaseActivity() {
                         requestVideo()
                         finishRefresh(false)
                     }else{
-                        val lastPointIndex = videoUrl!!.lastIndexOf(".")
-                        val prefix = videoUrl?.substring(0,lastPointIndex-1)
                         mViewModel.curPage = 1
                         isLoadMore = false
-                        mViewModel?.getNineTvVideo("$prefix${mViewModel.curPage}.json").observeNonNull(this@MainActivity,{
+                        mViewModel?.getNineTvVideo(mViewModel.paging(videoUrl!!,1)).observeNonNull(this@MainActivity,{
                             loadingView.hide()
                             finishRefresh(it)
                         })
@@ -280,12 +307,10 @@ class MainActivity : BaseActivity() {
                         requestVideo()
                         finishRefresh(false)
                     }else {
-                        val lastPointIndex = videoUrl!!.lastIndexOf(".")
-                        val prefix = videoUrl?.substring(0,lastPointIndex-1)
                         mViewModel.curPage += 1
                         loadingView.show()
                         isLoadMore = true
-                        mViewModel?.getNineTvVideo("$prefix${mViewModel.curPage}.json").observeNonNull(this@MainActivity,{
+                        mViewModel?.getNineTvVideo(mViewModel.paging(videoUrl!!,mViewModel.curPage)).observeNonNull(this@MainActivity,{
                             loadingView.hide()
                             finishLoadmore(it)
                         })
@@ -345,7 +370,7 @@ class MainActivity : BaseActivity() {
             videoJson.observeNonNull(this@MainActivity,{
                 if(it.isNotEmpty()){
                     videoUrl = it
-                    Log.d("iichen","########## $videoUrl    $it")
+                    loadingView.show()
                     getNineTvVideo(it).observeNonNull(this@MainActivity,{
                         loadingView.hide()
                     })
@@ -356,7 +381,7 @@ class MainActivity : BaseActivity() {
             })
 
             // 使用激活码
-            activateCodeBean.observeNonNull(this@MainActivity,{
+            baseBean.observeNonNull(this@MainActivity,{
                 if(it.code == Ext.SERVICE_ERROR_CODE){
                     it.msg.toast()
                 }else{
@@ -383,11 +408,84 @@ class MainActivity : BaseActivity() {
                 if(it.code == Ext.SERVICE_ERROR_CODE){
                     it.msg.toast()
                 }else{
+                    // 重置 视频主源  即可
                     mViewModel.setVideoUrl(it.data?.url)
+                }
+            })
+
+            // 所有频道
+            videoChannelBean.observeNonNull(this@MainActivity,{ it ->
+                loadingView.hide()
+                val data = it.data
+                if(data.isNotEmpty()){
+                    openBottomChanelSheetSelect(data)
+                }else{
+                    "频道信息为空".toast()
+                }
+            })
+
+            // 所有标签
+            videoTagsBean.observeNonNull(this@MainActivity,{ it ->
+                loadingView.hide()
+                val data = it.data
+                if(data.isNotEmpty()){
+                    openBottomTagsSheetSelect(data)
+                }else{
+                    "标签信息为空".toast()
+                }
+            })
+
+            favoriteListBean.observeNonNull(this@MainActivity,{ it ->
+                loadingView.hide()
+                val data = it.data
+                val dataList = mutableListOf<Data>()
+                data.forEach {
+                    dataList.add(Data(
+                        comefrom = 0,
+                        comefrom_title = it.title,
+                        description = "",
+                        id = it.videoId,
+                        is_bloger = 0,
+                        is_vip = 0,
+                        panorama = "",
+                        preview = "",
+                        status = 0,
+                        tags = JSONObject.parseArray(it.tags,Tag::class.java),
+                        test_video_url = it.videoUrl,
+                        thumb = it.thumb,
+                        title = it.title,
+                        try_second = 0,
+                        video_url = it.videoUrl,
+                    ))
+                }
+                if(dataList.isNotEmpty()){
+                    "下拉刷新或者上拉推荐吧。".toast()
+                    mAdapter.setNewInstance(dataList)
+                }else{
+                    "没有收藏哦！下拉刷新或者上拉推荐吧。".toast()
                 }
             })
         }
     }
+
+    private fun openBottomTagsSheetSelect(data: List<VideoTagsBean.Data>) {
+        val adapterData = mutableListOf<BottomSelectSheetBean>()
+        data.forEach {
+            adapterData.add(BottomSelectSheetBean(it.tagId,it.tagName))
+        }
+        val dialog = BottomSelectSheetDialog(adapterData,BottomSheetType.Tag)
+        dialog?.show(supportFragmentManager,"Dialog_BottomSelectSheetDialog")
+    }
+
+    private fun openBottomChanelSheetSelect(data: List<VideoChannelBean.Data>) {
+        val adapterData = mutableListOf<BottomSelectSheetBean>()
+        data.forEach {
+            adapterData.add(BottomSelectSheetBean(it.channelId,it.channelName))
+        }
+        val dialog = BottomSelectSheetDialog(adapterData,BottomSheetType.Channel)
+        dialog?.show(supportFragmentManager,"Dialog_BottomSelectSheetDialog")
+    }
+
 
     private fun checkUserEnable() :Boolean {
         Ext.user?.apply {
@@ -422,7 +520,7 @@ class MainActivity : BaseActivity() {
 
     private fun handlerRecycleView() {
         recyclerView.apply {
-            adapter = mAdapter
+            adapter = mViewModel.mAdapter
             layoutManager = LinearLayoutManager(this@MainActivity)
             // 出发回收机制执行
             setRecyclerListener { holder ->

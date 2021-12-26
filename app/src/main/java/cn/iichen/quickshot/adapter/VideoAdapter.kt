@@ -1,13 +1,21 @@
 package cn.iichen.quickshot.adapter
 
 import android.view.ViewGroup
+import androidx.lifecycle.LifecycleOwner
 import cn.iichen.quickshot.R
 import cn.iichen.quickshot.encap.NiceVideoPlayer
 import cn.iichen.quickshot.encap.TxVideoPlayerController
+import cn.iichen.quickshot.ext.Ext
+import cn.iichen.quickshot.ext.observeNonNull
 import cn.iichen.quickshot.pojo.Data
 import com.bumptech.glide.Glide
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.viewholder.BaseViewHolder
+
+import cn.iichen.quickshot.ext.toast
+import cn.iichen.quickshot.pojo.params.FavoriteBean
+import cn.iichen.quickshot.ui.home.HomeModel
+
 
 /**
  *
@@ -41,7 +49,7 @@ import com.chad.library.adapter.base.viewholder.BaseViewHolder
  */
 
 
-class VideoAdapter() : BaseQuickAdapter<Data, BaseViewHolder>(R.layout.adapter_nine_tv_item) {
+class VideoAdapter() : BaseQuickAdapter<Data, BaseViewHolder>(R.layout.adapter_nine_tv_item){
 
     /*
     id: 28705,
@@ -91,6 +99,7 @@ class VideoAdapter() : BaseQuickAdapter<Data, BaseViewHolder>(R.layout.adapter_n
         mediaPlayer.setController(controller)
         controller.setTitle(item.title)
         controller.setTags(item.tags)
+        controller.setVideoBean(item)
         Glide.with(context)
             .load(item.thumb.replace("imges.zgcbzs.com","img.rrt77.com"))
             .placeholder(R.drawable.img_default)
@@ -98,7 +107,18 @@ class VideoAdapter() : BaseQuickAdapter<Data, BaseViewHolder>(R.layout.adapter_n
             .into(controller.imageView())
         mediaPlayer.setUp(item.video_url, null)
     }
+
 }
+/*
+homeModel.doFavorite(FavoriteBean(
+                userId = Ext.user?.userId?:"",
+                videoId = data[index].id,
+                title = data[index].title,
+                thumb = data[index].thumb,
+                tags = data[index].tags,
+                videoUrl = data[index].video_url
+            ))
+ */
 
 
 

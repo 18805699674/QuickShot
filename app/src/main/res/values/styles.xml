@@ -70,4 +70,21 @@
         <attr name="endDrawableDuration" format="integer" />
 
     </declare-styleable>
+
+
+
+
+
+
+
+
+
+
+    <style name="BottomSheetDialogTheme" parent="Theme.MaterialComponents.Light.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/CommentDialogStyle</item>
+    </style>
+
+    <style name="CommentDialogStyle" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@color/transparent</item>
+    </style>
 </resources>

@@ -1,11 +1,17 @@
 package cn.iichen.quickshot.encap;
 
+import android.app.Activity;
 import android.content.Context;
+import android.media.PlaybackParams;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.Toast;
+
+import com.blankj.utilcode.util.ToastUtils;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -254,6 +260,7 @@ public abstract class NiceVideoPlayerController
         }
         return false;
     }
+
 
     /**
      * 手势左右滑动改变播放位置时，显示控制器中间的播放位置变化视图，

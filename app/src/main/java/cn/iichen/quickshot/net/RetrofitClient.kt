@@ -1,9 +1,14 @@
 package cn.iichen.quickshot.net
 
+import cn.iichen.quickshot.ext.Ext
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
+import okhttp3.Request
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.io.File
+import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 /**
@@ -40,8 +45,8 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
     private const val BASE_URL_THIRD = "https://nnp35.com/"
-//    private const val BASE_URL_II = "http://100.120.127.154/"
-    private const val BASE_URL_II = "http://30cd4e40.cpolar.io/"
+    private const val BASE_URL_II = "http://100.120.127.154/"
+//    private const val BASE_URL_II = "http://4901ea24.cpolar.io/"
 
     private var retrofitThird: Retrofit? = null
     private var retrofitII: Retrofit? = null
@@ -85,6 +90,17 @@ object RetrofitClient {
             connectTimeout(60, TimeUnit.SECONDS)
             readTimeout(60, TimeUnit.SECONDS)
             writeTimeout(60, TimeUnit.SECONDS)
+            addInterceptor { chain ->
+                val request: Request = chain.request()
+                    .newBuilder()
+                    .addHeader("Authorization", Ext.user?.token?:"")
+//                    .addHeader(
+//                        "User-Agent",
+//                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Safari/537.36"
+//                    )
+                    .build()
+                chain.proceed(request)
+            }
             retryOnConnectionFailure(true)//错误重连
         }
 

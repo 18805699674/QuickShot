@@ -12,9 +12,13 @@ import cn.iichen.diverseweather.data.remote.ApiResult
 import cn.iichen.diverseweather.data.remote.doFailure
 import cn.iichen.diverseweather.data.remote.doSuccess
 import cn.iichen.quickshot.R
+import cn.iichen.quickshot.pojo.BaseBean
 import cn.iichen.quickshot.pojo.UserBean
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 /**
  *
@@ -108,6 +112,19 @@ fun <T> LiveData<T>.observeNonNull(owner: LifecycleOwner, observer: (T) -> Unit)
 //            if(it is Boolean){
 //            }
             observer(it)
+        }
+    })
+}
+
+
+fun <T> Call<T>.doEnqueue(onResponse: (Response<T>)->Unit,onFail:(String?)->Unit){
+    this.enqueue(object : Callback<T> {
+        override fun onResponse(call: Call<T>, response: Response<T>) {
+            onResponse(response)
+        }
+
+        override fun onFailure(call: Call<T>, t: Throwable) {
+            onFail(t.message)
         }
     })
 }

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:padding="15dp"
+    android:background="@drawable/bg_white_8_radius"
+    android:layout_gravity="center"
+    android:layout_height="wrap_content">
+
+
+    <TextView
+        android:text="输入搜索关键词(仅当前分页内搜索)"
+        android:layout_width="match_parent"
+        android:textSize="14dp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_height="wrap_content"/>
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:layout_width="match_parent"
+        android:background="@null"
+        android:id="@+id/dialog_search_key"
+        android:hint="输入关键词"
+        android:gravity="center"
+        android:textSize="14dp"
+        android:layout_marginTop="15dp"
+        android:textStyle="bold"
+        android:layout_height="wrap_content"/>
+
+    <Button
+        android:id="@+id/dialog_search_search"
+        android:layout_marginTop="30dp"
+        android:text="立即搜索"
+        android:textSize="16dp"
+        android:textColor="@color/white"
+        android:background="@drawable/bg_text_f74848_5_radius"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+</LinearLayout>

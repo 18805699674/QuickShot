@@ -1,12 +1,17 @@
 package cn.iichen.quickshot.encap;
 
+import android.animation.Animator;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.BatteryManager;
 import android.os.CountDownTimer;
+import android.os.SystemClock;
+import android.util.Log;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -15,6 +20,13 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.airbnb.lottie.LottieAnimationView;
+import com.airbnb.lottie.model.LottieComposition;
+import com.blankj.utilcode.util.ToastUtils;
+
+import org.jetbrains.annotations.NotNull;
+import org.json.JSONObject;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -22,9 +34,18 @@ import java.util.List;
 import java.util.Locale;
 
 import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
 import cn.iichen.quickshot.R;
+import cn.iichen.quickshot.ext.Ext;
+import cn.iichen.quickshot.net.RetrofitClient;
+import cn.iichen.quickshot.pojo.BaseBean;
+import cn.iichen.quickshot.pojo.Data;
 import cn.iichen.quickshot.pojo.Tag;
+import cn.iichen.quickshot.pojo.params.FavoriteBean;
 import cn.iichen.quickshot.utils.NiceUtil;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /**
  * Created by XiaoJianjun on 2017/6/21.
@@ -43,6 +64,7 @@ public class TxVideoPlayerController
     private LinearLayout mTop;
     private ImageView mBack;
     private TextView mTitle;
+    private LottieAnimationView mFavorite;
     private LinearLayout mBatteryTime;
     private ImageView mBattery;
     private TextView mTime;
@@ -87,6 +109,7 @@ public class TxVideoPlayerController
 
     private boolean hasRegisterBatteryReceiver; // 是否已经注册了电池广播
 
+
     public TxVideoPlayerController(Context context) {
         super(context);
         mContext = context;
@@ -102,6 +125,7 @@ public class TxVideoPlayerController
         mTop = (LinearLayout) findViewById(R.id.top);
         mBack = (ImageView) findViewById(R.id.back);
         mTitle = (TextView) findViewById(R.id.title);
+        mFavorite = (LottieAnimationView) findViewById(R.id.favorite);
         mBatteryTime = (LinearLayout) findViewById(R.id.battery_time);
         mBattery = (ImageView) findViewById(R.id.battery);
         mTime = (TextView) findViewById(R.id.time);
@@ -137,6 +161,23 @@ public class TxVideoPlayerController
 
         mCenterStart.setOnClickListener(this);
         mBack.setOnClickListener(this);
+        mFavorite.setOnClickListener(this);
+        mFavorite.addAnimatorListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) { }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mFavorite.setVisibility(View.GONE);
+                mFavorite.setProgress(0);
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {}
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {}
+        });
         mRestartPause.setOnClickListener(this);
         mFullScreen.setOnClickListener(this);
         mClarity.setOnClickListener(this);
@@ -263,6 +304,7 @@ public class TxVideoPlayerController
                 mImage.setVisibility(View.VISIBLE);
                 mCompleted.setVisibility(View.VISIBLE);
                 break;
+            default:
         }
     }
 
@@ -358,6 +400,16 @@ public class TxVideoPlayerController
         mCompleted.setVisibility(View.GONE);
     }
 
+//    OnVideoClickListener listener;
+//
+//    public interface OnVideoClickListener{
+//        void videoClick(int index);
+//    }
+//    public void setOnVideoClickListener(OnVideoClickListener listener){
+//        this.listener = listener;
+//    }
+    private static final long CLICK_INTERVAL_TIME = 300;
+    private static long lastClickTime = 0;
     /**
      * 尽量不要在onClick中直接处理控件的隐藏、显示及各种UI逻辑。
      * UI相关的逻辑都尽量到{@link #onPlayStateChanged}和{@link #onPlayModeChanged}中处理.
@@ -396,6 +448,15 @@ public class TxVideoPlayerController
         } else if (v == mShare) {
             Toast.makeText(mContext, "分享", Toast.LENGTH_SHORT).show();
         } else if (v == this) {
+            //获取系统当前毫秒数，从开机到现在的毫秒数(手机睡眠时间不包括在内)
+            long currentTimeMillis = SystemClock.uptimeMillis();
+            //两次点击间隔时间小于300ms代表双击
+            if (currentTimeMillis - lastClickTime < CLICK_INTERVAL_TIME) {
+                handleDoubleTap();
+                return;
+            }
+            lastClickTime = currentTimeMillis;
+
             if (mNiceVideoPlayer.isPlaying()
                     || mNiceVideoPlayer.isPaused()
                     || mNiceVideoPlayer.isBufferingPlaying()
@@ -504,6 +565,36 @@ public class TxVideoPlayerController
         mTime.setText(new SimpleDateFormat("HH:mm", Locale.CHINA).format(new Date()));
     }
 
+    protected void handleDoubleTap() {
+        if(mNiceVideoPlayer.isPlaying() || mNiceVideoPlayer.isCompleted() || mNiceVideoPlayer.isPaused()){
+            Call call = RetrofitClient.INSTANCE.getServiceII().doFavorite(new FavoriteBean(
+                    Ext.INSTANCE.getUser().getUserId(),
+                    data.getId(),
+                    data.getTitle(),
+                    data.getThumb(),
+                    data.getTags(),
+                    data.getVideo_url()
+            ));
+            call.enqueue(new Callback<BaseBean>() {
+                @Override
+                public void onResponse(@NonNull Call<BaseBean> call, Response<BaseBean> response) {
+                    mFavorite.setVisibility(View.VISIBLE);
+                    mFavorite.playAnimation();
+                    BaseBean baseBean = response.body();
+                    if(baseBean!=null) {
+                        ToastUtils.showShort(baseBean.getMsg());
+                    } else {
+                        ToastUtils.showShort("收藏失败");
+                    }
+                }
+                @Override
+                public void onFailure(Call<BaseBean> call, Throwable t) {
+                    ToastUtils.showShort("收藏失败 "+ t.getMessage());
+                }
+            });
+        }
+    }
+
     @Override
     protected void showChangePosition(long duration, int newPositionProgress) {
         mChangePositon.setVisibility(View.VISIBLE);
@@ -539,5 +630,10 @@ public class TxVideoPlayerController
     @Override
     protected void hideChangeBrightness() {
         mChangeBrightness.setVisibility(View.GONE);
+    }
+
+    Data data;
+    public void setVideoBean(@NotNull Data item) {
+        data = item;
     }
 }
