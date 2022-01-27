@@ -15,6 +15,8 @@ import android.view.TextureView;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import com.tencent.mmkv.MMKV;
+
 import java.io.IOException;
 import java.util.Map;
 
@@ -90,7 +92,7 @@ public class NiceVideoPlayer extends FrameLayout
      **/
     public static final int TYPE_NATIVE = 222;
 
-    private int mPlayerType = TYPE_NATIVE;
+    private int mPlayerType = TYPE_IJK;
     private int mCurrentState = STATE_IDLE;
     private int mCurrentMode = MODE_NORMAL;
 
@@ -205,6 +207,7 @@ public class NiceVideoPlayer extends FrameLayout
         } else if (mCurrentState == STATE_COMPLETED || mCurrentState == STATE_ERROR) {
             mMediaPlayer.reset();
             openMediaPlayer();
+            Log.d("iichen","STATE_COMPLETED || STATE_ERROR");
         } else {
             Log.d("iichen","NiceVideoPlayer在mCurrentState == " + mCurrentState + "时不能调用restart()方法.");
         }
@@ -363,11 +366,18 @@ public class NiceVideoPlayer extends FrameLayout
                 case TYPE_IJK:
                 default:
                     mMediaPlayer = new IjkMediaPlayer();
-//                    ((IjkMediaPlayer)mMediaPlayer).setOption(1, "analyzemaxduration", 100L);
-//                    ((IjkMediaPlayer)mMediaPlayer).setOption(1, "probesize", 10240L);
-//                    ((IjkMediaPlayer)mMediaPlayer).setOption(1, "flush_packets", 1L);
-//                    ((IjkMediaPlayer)mMediaPlayer).setOption(4, "packet-buffering", 0L);
-//                    ((IjkMediaPlayer)mMediaPlayer).setOption(4, "framedrop", 1L);
+                    // 探测时间
+//                    ((IjkMediaPlayer)mMediaPlayer).setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "analyzemaxduration", 100L);
+                    // 关闭缓存
+//                    ((IjkMediaPlayer)mMediaPlayer).setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "packet-buffering", 0L);
+
+                    // 开启了 会没声音
+//                    ((IjkMediaPlayer)mMediaPlayer).setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "probesize", 10240*5L);
+                    //每处理一个packet之后刷新io上下文
+//                    ((IjkMediaPlayer)mMediaPlayer).setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "flush_packets", 1L);
+                    ((IjkMediaPlayer)mMediaPlayer).setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "framedrop", 1L);
+                    ((IjkMediaPlayer)mMediaPlayer).setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "enable-accurate-seek", 1);
+//                    ((IjkMediaPlayer)mMediaPlayer).setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "soundtouch", 1);
                     break;
             }
             mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -446,7 +456,7 @@ public class NiceVideoPlayer extends FrameLayout
         public void onPrepared(IMediaPlayer mp) {
             mCurrentState = STATE_PREPARED;
             mController.onPlayStateChanged(mCurrentState);
-            mController.setLenght(mp.getDuration());
+//            mController.setLenght(mp.getDuration());
             Log.d("iichen","onPrepared ——> STATE_PREPARED");
             mp.start();
             // 从上次的保存位置播放

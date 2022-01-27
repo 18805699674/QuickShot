@@ -1,6 +1,7 @@
 package cn.iichen.quickshot.encap;
 
 import android.animation.Animator;
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -23,6 +24,7 @@ import android.widget.Toast;
 import com.airbnb.lottie.LottieAnimationView;
 import com.airbnb.lottie.model.LottieComposition;
 import com.blankj.utilcode.util.ToastUtils;
+import com.tencent.mmkv.MMKV;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
@@ -109,13 +111,13 @@ public class TxVideoPlayerController
 
     private boolean hasRegisterBatteryReceiver; // 是否已经注册了电池广播
 
-
     public TxVideoPlayerController(Context context) {
         super(context);
         mContext = context;
         init();
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private void init() {
         LayoutInflater.from(mContext).inflate(R.layout.tx_video_palyer_controller, this, true);
 
@@ -186,7 +188,17 @@ public class TxVideoPlayerController
         mShare.setOnClickListener(this);
         mSeek.setOnSeekBarChangeListener(this);
         this.setOnClickListener(this);
+
+        this.setOnLongClickListener(v -> {
+            if(mNiceVideoPlayer.isPlaying()){
+                longPress = true;
+                mNiceVideoPlayer.setSpeed(2.0f);
+            }
+            return false;
+        });
     }
+    boolean longPress = false;
+
 
     @Override
     public void setTitle(String title) {
@@ -301,8 +313,14 @@ public class TxVideoPlayerController
             case NiceVideoPlayer.STATE_COMPLETED:
                 cancelUpdateProgressTimer();
                 setTopBottomVisible(false);
-                mImage.setVisibility(View.VISIBLE);
-                mCompleted.setVisibility(View.VISIBLE);
+                MMKV mmkv = MMKV.defaultMMKV();
+                boolean loop = mmkv.getBoolean("loop",true);
+                if(loop){
+                    mNiceVideoPlayer.restart();
+                }else{
+                    mImage.setVisibility(View.VISIBLE);
+                    mCompleted.setVisibility(View.VISIBLE);
+                }
                 break;
             default:
         }
@@ -442,26 +460,34 @@ public class TxVideoPlayerController
             setTopBottomVisible(false); // 隐藏top、bottom
             mClarityDialog.show();     // 显示清晰度对话框
         } else if (v == mRetry) {
+//            mNiceVideoPlayer.seekTo(0);
             mNiceVideoPlayer.restart();
         } else if (v == mReplay) {
             mRetry.performClick();
         } else if (v == mShare) {
             Toast.makeText(mContext, "分享", Toast.LENGTH_SHORT).show();
         } else if (v == this) {
-            //获取系统当前毫秒数，从开机到现在的毫秒数(手机睡眠时间不包括在内)
-            long currentTimeMillis = SystemClock.uptimeMillis();
-            //两次点击间隔时间小于300ms代表双击
-            if (currentTimeMillis - lastClickTime < CLICK_INTERVAL_TIME) {
-                handleDoubleTap();
-                return;
-            }
-            lastClickTime = currentTimeMillis;
+            if(longPress){
+                if(mNiceVideoPlayer.isPlaying()){
+                    mNiceVideoPlayer.setSpeed(1.0f);
+                    longPress = false;
+                }
+            }else{
+                //获取系统当前毫秒数，从开机到现在的毫秒数(手机睡眠时间不包括在内)
+                long currentTimeMillis = SystemClock.uptimeMillis();
+                //两次点击间隔时间小于300ms代表双击
+                if (currentTimeMillis - lastClickTime < CLICK_INTERVAL_TIME) {
+                    handleDoubleTap();
+                    return;
+                }
+                lastClickTime = currentTimeMillis;
 
-            if (mNiceVideoPlayer.isPlaying()
-                    || mNiceVideoPlayer.isPaused()
-                    || mNiceVideoPlayer.isBufferingPlaying()
-                    || mNiceVideoPlayer.isBufferingPaused()) {
-                setTopBottomVisible(!topBottomVisible);
+                if (mNiceVideoPlayer.isPlaying()
+                        || mNiceVideoPlayer.isPaused()
+                        || mNiceVideoPlayer.isBufferingPlaying()
+                        || mNiceVideoPlayer.isBufferingPaused()) {
+                    setTopBottomVisible(!topBottomVisible);
+                }
             }
         }
     }

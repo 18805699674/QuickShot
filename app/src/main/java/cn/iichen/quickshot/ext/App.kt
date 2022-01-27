@@ -47,6 +47,7 @@ class App : Application() {
     companion object{
         @SuppressLint("StaticFieldLeak")
         lateinit var context:Context
+
         init {
             //设置全局的Header构建器
             SmartRefreshLayout.setDefaultRefreshHeaderCreater { context, layout ->

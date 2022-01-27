@@ -1,5 +1,6 @@
 package cn.iichen.quickshot.adapter
 
+import android.util.Log
 import android.view.ViewGroup
 import androidx.lifecycle.LifecycleOwner
 import cn.iichen.quickshot.R
@@ -101,7 +102,7 @@ class VideoAdapter() : BaseQuickAdapter<Data, BaseViewHolder>(R.layout.adapter_n
         controller.setTags(item.tags)
         controller.setVideoBean(item)
         Glide.with(context)
-            .load(item.thumb.replace("imges.zgcbzs.com","img.rrt77.com"))
+            .load(item.thumb.replace("images.rmyypurking.cn","img.rrt77.com"))
             .placeholder(R.drawable.img_default)
             .crossFade()
             .into(controller.imageView())

@@ -81,10 +81,14 @@ class HomeModel : ViewModel() {
     val videoJson: LiveData<String> get() = _videoJson
 
 
+    private val _fail: MutableLiveData<Boolean> = MutableLiveData(false)
+    val fail: LiveData<Boolean> get() = _fail
+
     // 获取视频源
     suspend fun getVideoSource() {
         repository.getVideoSource().collectLatest {
             it.doFailure { throwable ->
+                _fail.value = !_fail.value!!
             }
             it.doSuccess { value ->
                 _videoJson.value = value.data?.url ?: ""
@@ -104,6 +108,7 @@ class HomeModel : ViewModel() {
     suspend fun doRegister(registerBean: RegisterBean) {
         repository.doRegister(registerBean).collectLatest {
             it.doFailure { throwable ->
+                _fail.value = !_fail.value!!
             }
             it.doSuccess { value ->
                 _userBean.value = value
@@ -114,7 +119,7 @@ class HomeModel : ViewModel() {
     suspend fun doLogin(registerBean: RegisterBean) {
         repository.doLogin(registerBean).collectLatest {
             it.doFailure { throwable ->
-
+                _fail.value = !_fail.value!!
             }
             it.doSuccess { value ->
                 _userBean.value = value
@@ -139,6 +144,7 @@ class HomeModel : ViewModel() {
     suspend fun doActiveAccount(userId: String, code: String) {
         repository.doActiveAccount(userId, code).collectLatest {
             it.doFailure { throwable ->
+                _fail.value = !_fail.value!!
             }
             it.doSuccess { value ->
                 _baseBean.value = value
@@ -153,6 +159,7 @@ class HomeModel : ViewModel() {
     suspend fun getVideoSourceTimeRange() {
         repository.getVideoSourceTimeRange().collectLatest {
             it.doFailure { throwable ->
+                _fail.value = !_fail.value!!
             }
             it.doSuccess { value ->
                 _videoSourceTimeRangeBean.value = value
@@ -165,6 +172,7 @@ class HomeModel : ViewModel() {
     suspend fun getVideoSourceByTime(time: String) {
         repository.getVideoSourceByTime(time).collectLatest {
             it.doFailure { throwable ->
+                _fail.value = !_fail.value!!
             }
             it.doSuccess { value ->
                 _videoSourceBean.value = value
@@ -178,6 +186,7 @@ class HomeModel : ViewModel() {
     suspend fun getVideoChannels() {
         repository.getVideoChannels().collectLatest {
             it.doFailure { throwable ->
+                _fail.value = !_fail.value!!
             }
             it.doSuccess { value ->
                 _videoChannelBean.value = value
@@ -190,6 +199,7 @@ class HomeModel : ViewModel() {
     suspend fun getVideoTags() {
         repository.getVideoTags().collectLatest {
             it.doFailure { throwable ->
+                _fail.value = !_fail.value!!
             }
             it.doSuccess { value ->
                 _videoTagsBean.value = value
@@ -203,6 +213,7 @@ class HomeModel : ViewModel() {
         viewModelScope.launch {
             repository.getFavorite(userId).collectLatest {
                 it.doFailure { throwable ->
+                    _fail.value = !_fail.value!!
                 }
                 it.doSuccess { value ->
                     _favoriteListBean.value = value

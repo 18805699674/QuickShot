@@ -9,6 +9,7 @@
 
 
     <TextView
+        android:id="@+id/dialog_search_title"
         android:text="输入搜索关键词(仅当前分页内搜索)"
         android:layout_width="match_parent"
         android:textSize="14dp"

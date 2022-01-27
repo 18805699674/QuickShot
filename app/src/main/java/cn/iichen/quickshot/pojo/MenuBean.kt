@@ -34,5 +34,6 @@ package cn.iichen.quickshot.pojo
 
 data class MenuBean(
     val iconId : Int,
-    val name : String
+    val name : String,
+    val switch : Boolean = false
 )

@@ -1,11 +1,12 @@
 package cn.iichen.quickshot.ui.home
 
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Process
 import android.view.*
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.DialogFragment
@@ -24,9 +25,9 @@ import com.tencent.mmkv.MMKV
 import de.hdodenhof.circleimageview.CircleImageView
 import kotlinx.android.synthetic.main.activity_main.*
 import java.lang.Exception
-import android.widget.EditText
 
 import android.view.MotionEvent
+import cn.iichen.quickshot.net.RetrofitClient
 import cn.iichen.quickshot.pojo.*
 import com.alibaba.fastjson.JSONObject
 
@@ -37,6 +38,10 @@ import kotlinx.android.synthetic.main.tx_video_palyer_controller.*
 import kotlinx.coroutines.*
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.Delayed
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import android.util.Log
+import android.widget.*
 
 
 class MainActivity : BaseActivity() {
@@ -114,23 +119,23 @@ class MainActivity : BaseActivity() {
             MenuBean(R.drawable.favorite,"我的收藏"),
             MenuBean(R.drawable.activation,"激活码激活"),
             MenuBean(R.drawable.searchs,"当前源搜索"),
+            MenuBean(R.drawable.service,"切换服务器"),
             MenuBean(R.drawable.channel,"指定视频频道"),
             MenuBean(R.drawable.tags,"指定视频标签"),
             // 请求用户信息后 额外添加的  管理员有的权限  不搭建后台 在这里作为后台操作
-//            MenuBean(R.drawable.ad_free,"用户管理"),
-//            MenuBean(R.drawable.ad_free,"增加激活码"),
-//            MenuBean(R.drawable.ad_free,"发放激活码"),
-            )
+            MenuBean(R.drawable.loop,"循环播放",true),
+            MenuBean(R.drawable.backgroundplay,"后台播放",true),
+         )
         val headView = LayoutInflater.from(this).inflate(R.layout.activity_main_drawer_header,nav_view_recycle,false)
-        val footView = LayoutInflater.from(this).inflate(R.layout.activity_main_drawer_foot,nav_view_recycle,false)
+//        val footView = LayoutInflater.from(this).inflate(R.layout.activity_main_drawer_foot,nav_view_recycle,false)
         val adapter = NavContentAdapter(data)
         adapter.setHeaderView(headView)
-        adapter.setFooterView(footView)
+//        adapter.setFooterView(footView)
         nav_view_recycle.adapter = adapter
 
         // headerView的点击事件
         handlerDrawerHeadViewEvent(headView)
-        handlerDrawerFootViewEvent(footView)
+//        handlerDrawerFootViewEvent(footView)
         adapter.addChildClickViewIds(R.id.nav_item_ll)
         adapter.setOnItemChildClickListener { adapter, view, position ->
             when(view.id){
@@ -180,11 +185,16 @@ class MainActivity : BaseActivity() {
                             val curVideoDataList: MutableList<Data> = mViewModel.mAdapter.data
                             dialog = SearchDialog(curVideoDataList)
                             dialog?.show(supportFragmentManager,"Dialog_SearchDialog")
-
+                            drawer.closeDrawers()
+                        }
+                        5 -> {
+                            val curVideoDataList: MutableList<Data> = mViewModel.mAdapter.data
+                            dialog = SwitchServiceDialog(curVideoDataList)
+                            dialog?.show(supportFragmentManager,"Dialog_SearchDialog")
                             drawer.closeDrawers()
                         }
                         //指定视频频道
-                        5 -> {
+                        6 -> {
                             drawer.closeDrawers()
                             if(mViewModel.videoChannelBean.value==null) {
                                 ioScope.launch {
@@ -196,7 +206,7 @@ class MainActivity : BaseActivity() {
                             }
                         }
                         //指定视频标签
-                        6 -> {
+                        7 -> {
                             drawer.closeDrawers()
                             if(mViewModel.videoTagsBean.value==null) {
                                 ioScope.launch {
@@ -329,6 +339,11 @@ class MainActivity : BaseActivity() {
     private var videoSourceTimeRangeLoad: VideoSourceTimeRangeBean.Data? = null
     private fun handlerModelView() {
         mViewModel?.apply {
+            fail.observeNonNull(this@MainActivity,{
+               loadingView.hide()
+            })
+
+
 //              第二步
             currentPage.observeNonNull(this@MainActivity,{
                 currentPageNum.text = "$it"
@@ -349,6 +364,7 @@ class MainActivity : BaseActivity() {
 
             // 用户信息
             userBean.observeNonNull(this@MainActivity,{
+                loadingView.hide()
                 if(it.code == Ext.SERVICE_ERROR_CODE){
                     it.msg.toast()
                     dialog = LoginDialog()
@@ -566,17 +582,24 @@ class MainActivity : BaseActivity() {
         mHomeKeyWatcher?.startWatch()
         pressedHome = false
         super.onRestart()
-        NiceVideoPlayerManager.instance().resumeNiceVideoPlayer()
+
+        val mmkv = MMKV.defaultMMKV()
+        val backgroundPlay = mmkv.getBoolean("backgroundPlay", true)
+        if(!backgroundPlay)
+            NiceVideoPlayerManager.instance().resumeNiceVideoPlayer()
     }
 
     override fun onStop() {
 
         // 在OnStop中是release还是suspend播放器，需要看是不是因为按了Home键
-        if (pressedHome) {
-            NiceVideoPlayerManager.instance().suspendNiceVideoPlayer()
-        } else {
-            NiceVideoPlayerManager.instance().releaseNiceVideoPlayer()
-        }
+        val mmkv = MMKV.defaultMMKV()
+        val backgroundPlay = mmkv.getBoolean("backgroundPlay", true)
+        if(!backgroundPlay)
+            if (pressedHome) {
+                NiceVideoPlayerManager.instance().suspendNiceVideoPlayer()
+            } else {
+                NiceVideoPlayerManager.instance().releaseNiceVideoPlayer()
+            }
         super.onStop()
         mHomeKeyWatcher?.stopWatch()
     }
