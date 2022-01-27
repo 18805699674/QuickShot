@@ -119,7 +119,6 @@ class MainActivity : BaseActivity() {
             MenuBean(R.drawable.favorite,"我的收藏"),
             MenuBean(R.drawable.activation,"激活码激活"),
             MenuBean(R.drawable.searchs,"当前源搜索"),
-            MenuBean(R.drawable.service,"切换服务器"),
             MenuBean(R.drawable.channel,"指定视频频道"),
             MenuBean(R.drawable.tags,"指定视频标签"),
             // 请求用户信息后 额外添加的  管理员有的权限  不搭建后台 在这里作为后台操作
@@ -184,12 +183,6 @@ class MainActivity : BaseActivity() {
                         4 -> {
                             val curVideoDataList: MutableList<Data> = mViewModel.mAdapter.data
                             dialog = SearchDialog(curVideoDataList)
-                            dialog?.show(supportFragmentManager,"Dialog_SearchDialog")
-                            drawer.closeDrawers()
-                        }
-                        5 -> {
-                            val curVideoDataList: MutableList<Data> = mViewModel.mAdapter.data
-                            dialog = SwitchServiceDialog(curVideoDataList)
                             dialog?.show(supportFragmentManager,"Dialog_SearchDialog")
                             drawer.closeDrawers()
                         }

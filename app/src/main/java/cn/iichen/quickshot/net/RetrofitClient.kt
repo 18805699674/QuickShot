@@ -1,9 +1,6 @@
 package cn.iichen.quickshot.net
 
-import android.util.Log
-import cn.iichen.quickshot.ext.App
 import cn.iichen.quickshot.ext.Ext
-import com.tencent.mmkv.MMKV
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -45,10 +42,11 @@ import java.util.concurrent.TimeUnit
 ┗┻┛　┗┻┛
  */
 
+
 object RetrofitClient {
     private const val BASE_URL_THIRD = "https://nnp35.com/"
-
-    private val DefaultDomainService = "620cdf50"
+    private const val BASE_URL_II = "http://124.223.95.22:8088/"
+//    private const val BASE_URL_II = "http://4901ea24.cpolar.io/"
 
     private var retrofitThird: Retrofit? = null
     private var retrofitII: Retrofit? = null
@@ -72,15 +70,10 @@ object RetrofitClient {
         }
         return retrofitThird!!
     }
-
     private fun getRetrofitII(): Retrofit {
         if (retrofitII == null) {
-            val mmkv = MMKV.defaultMMKV()
-            var service =  mmkv.getString("domain",DefaultDomainService)
-            service = "http://${service}.cpolar.io/"
-            Log.d("iichen","############ $service")
             retrofitII = Retrofit.Builder()
-                .baseUrl(service)
+                .baseUrl(BASE_URL_II)
                 .client(getOkHttpClient())
                 .addConverterFactory(GsonConverterFactory.create())
                 //.addCallAdapterFactory(RxJava2CallAdapterFactory.create())
@@ -88,7 +81,6 @@ object RetrofitClient {
         }
         return retrofitII!!
     }
-
 
 
     private fun getOkHttpClient(): OkHttpClient {
