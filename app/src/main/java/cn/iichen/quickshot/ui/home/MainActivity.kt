@@ -187,7 +187,7 @@ class MainActivity : BaseActivity() {
                             drawer.closeDrawers()
                         }
                         //指定视频频道
-                        6 -> {
+                        5 -> {
                             drawer.closeDrawers()
                             if(mViewModel.videoChannelBean.value==null) {
                                 ioScope.launch {
@@ -199,7 +199,7 @@ class MainActivity : BaseActivity() {
                             }
                         }
                         //指定视频标签
-                        7 -> {
+                        6 -> {
                             drawer.closeDrawers()
                             if(mViewModel.videoTagsBean.value==null) {
                                 ioScope.launch {
