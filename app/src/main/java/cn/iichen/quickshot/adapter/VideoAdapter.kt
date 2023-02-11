@@ -16,6 +16,7 @@ import com.chad.library.adapter.base.viewholder.BaseViewHolder
 import cn.iichen.quickshot.ext.toast
 import cn.iichen.quickshot.pojo.params.FavoriteBean
 import cn.iichen.quickshot.ui.home.HomeModel
+import java.lang.Exception
 
 
 /**
@@ -101,8 +102,16 @@ class VideoAdapter() : BaseQuickAdapter<Data, BaseViewHolder>(R.layout.adapter_n
         controller.setTitle(item.title)
         controller.setTags(item.tags)
         controller.setVideoBean(item)
+        // https://tvvimage.bhstz.com/77xxx/files/202208/09/1660036401_k9wGP0g6ss.jpg
+        // https://img.rrt77.com/91tv/91tv/cCIQZAXglVvdUuiSGDEYkpdykpmLNJ/cCIQZAXglVvdUuiSGDEYkpdykpmLNJ_longPreview.jpg
+        var waitReplaceSite = ""
+        var replaceSite = ""
+        try{
+            waitReplaceSite = item.thumb.split("://")[1].split("/")[0]
+            replaceSite = item.panorama.split("://")[1].split("/")[0]
+        }catch (e: Exception){}
         Glide.with(context)
-            .load(item.thumb.replace("tvvimage.bhstz.com","img.rrt77.com"))
+            .load(item.thumb.replace(waitReplaceSite,replaceSite))
             .placeholder(R.drawable.img_default)
             .crossFade()
             .into(controller.imageView())

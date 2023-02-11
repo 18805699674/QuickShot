@@ -106,14 +106,14 @@ fun String.toast(){
 }
 
 fun <T> LiveData<T>.observeNonNull(owner: LifecycleOwner, observer: (T) -> Unit) {
-    this.observe(owner, {
+    this.observe(owner) {
         if (it != null) {
             // 加载情况处理
 //            if(it is Boolean){
 //            }
             observer(it)
         }
-    })
+    }
 }
 
 

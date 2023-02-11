@@ -297,10 +297,11 @@ class MainActivity : BaseActivity() {
                     }else{
                         mViewModel.curPage = 1
                         isLoadMore = false
-                        mViewModel?.getNineTvVideo(mViewModel.paging(videoUrl!!,1)).observeNonNull(this@MainActivity,{
-                            loadingView.hide()
-                            finishRefresh(it)
-                        })
+                        mViewModel.getNineTvVideo(mViewModel.paging(videoUrl!!,1))
+                            .observeNonNull(this@MainActivity) {
+                                loadingView.hide()
+                                finishRefresh(it)
+                            }
                     }
                 }catch (e:Exception){finishRefresh(false)}
             }
